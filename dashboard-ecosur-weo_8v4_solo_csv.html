@@ -990,10 +990,11 @@ function processCSVText(text){
 
   const headers=parseCSVRow(lines[0]).map(h=>h.trim());
   const isoIdx=findHeaderIndex(headers,['weo country code','country code','iso','iso3']);
+  const seriesCodeIdx=findHeaderIndex(headers,['series_code','series code']);
   const subjectCodeIdx=findHeaderIndex(headers,['subject code','weo subject code','indicator code']);
   const subjectDescIdx=findHeaderIndex(headers,['subject descriptor','indicator','series name']);
   const countryIdx=findHeaderIndex(headers,['country','country name']);
-  if(isoIdx===-1 || (subjectCodeIdx===-1 && subjectDescIdx===-1)) throw new Error('El CSV no contiene las columnas esperadas.');
+  if((isoIdx===-1 && seriesCodeIdx===-1) || (subjectCodeIdx===-1 && subjectDescIdx===-1 && seriesCodeIdx===-1)) throw new Error('El CSV no contiene las columnas esperadas.');
 
   const yearIndices={};
   headers.forEach((header,index)=>{
@@ -1006,7 +1007,11 @@ function processCSVText(text){
 
   for(let i=1;i<lines.length;i++){
     const vals=parseCSVRow(lines[i]).map(v=>v.trim());
-    const iso=String(vals[isoIdx]||'').split('.')[0].trim().toUpperCase();
+    const seriesCode=String(vals[seriesCodeIdx]||'').trim();
+    const seriesParts=seriesCode.split('.');
+    const derivedIso=seriesParts[0]||'';
+    const derivedIndicator=seriesParts.length>1 ? seriesParts[1] : '';
+    const iso=String((isoIdx!==-1 ? vals[isoIdx] : derivedIso) || derivedIso || '').split('.')[0].trim().toUpperCase();
     if(!iso) continue;
 
     if(!ALL_COUNTRIES[iso] && countryIdx!==-1){
@@ -1014,7 +1019,7 @@ function processCSVText(text){
     }
     if(!ALL_COUNTRIES[iso]) continue;
 
-    const key=mapCsvIndicator(vals[subjectCodeIdx],vals[subjectDescIdx]);
+    const key=mapCsvIndicator(subjectCodeIdx!==-1 ? vals[subjectCodeIdx] : derivedIndicator, subjectDescIdx!==-1 ? vals[subjectDescIdx] : '');
     if(!key) continue;
 
     if(!parsed[iso][key]) parsed[iso][key]={};
