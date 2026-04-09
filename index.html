@@ -89,7 +89,6 @@ header{background:var(--eco-navy);}
 .year-row{display:flex;align-items:center;gap:.45rem;}
 select{background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:'Barlow',sans-serif;font-size:.75rem;padding:.22rem 1.3rem .22rem .55rem;border-radius:3px;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2344546A'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .4rem center;background-color:var(--surface);}
 .sep{color:var(--text3);font-size:.7rem;}
-input[type="file"] { font-family: 'Barlow', sans-serif; font-size: 0.7rem; color: var(--text2); cursor: pointer; max-width: 170px;}
 
 /* MAIN */
 main{padding:1.6rem 2.2rem;opacity:0;transition:opacity .4s;max-width:1600px;margin:0 auto;}
@@ -174,10 +173,6 @@ footer{background:var(--eco-navy);padding:.9rem 2.2rem;display:flex;align-items:
       <select id="yr-end"></select>
     </div>
   </div>
-  <div style="padding-left: 1rem; border-left: 1px solid var(--border);">
-    <div class="ctrl-label">Carga Manual (Opcional)</div>
-    <input type="file" id="csv-upload" accept=".csv" title="Sube tu propio CSV si la búsqueda automática falla" />
-  </div>
 </div>
 
 <main id="main" class="visible">
@@ -247,12 +242,12 @@ async function fetchAndProcessWEO() {
     try {
         statusText.textContent = 'Buscando el último CSV en la nube...';
         
-        // ¡LA CONEXIÓN A TU REPOSITORIO DE GITHUB!
+        // ¡REEMPLAZADO CON TU USUARIO REAL!
         const GITHUB_REPO = 'fundacionecosur/dashboard'; 
         
         // 1. Pedir a GitHub la lista de archivos
         const apiResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/`);
-        if (!apiResponse.ok) throw new Error('No se pudo conectar con el repositorio. Revisa el nombre del usuario/repo.');
+        if (!apiResponse.ok) throw new Error('No se pudo conectar con el repositorio. Verifica que sea público.');
         
         const files = await apiResponse.json();
         
@@ -272,14 +267,14 @@ async function fetchAndProcessWEO() {
         
         processCSV(csvText);
         
-        statusText.textContent = 'Sincronizado con el último WEO (' + latestCSV.name + ')';
-        statusDot.style.background = '#4ade80'; // Verde
+        statusText.textContent = 'Sincronizado con el último WEO';
+        statusDot.style.background = '#4ade80';
         
     } catch (e) {
         console.warn(e);
         statusText.textContent = 'Error: No se pudo cargar de GitHub.';
-        statusDot.style.background = '#c0392b'; // Rojo
-        document.getElementById('kpi-container').innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--red); font-weight: bold;">Error: ${e.message}<br><br>Mientras tanto, usa el botón "Carga Manual (Opcional)" arriba a la derecha.</div>`;
+        statusDot.style.background = '#c0392b';
+        document.getElementById('kpi-container').innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--red); font-weight: bold;">Error: ${e.message}</div>`;
         document.getElementById('charts-wrapper').innerHTML = '';
     }
 }
@@ -515,7 +510,7 @@ function fillDdList(list,si){
   });
 }
 
-// ── RENDERIZACIÓN DE GRÁFICOS Y KPIs ─────────────────────────────────────────
+// ── EXTRACCIÓN DE DATA, FORMATO Y RENDERIZACIÓN ──────────────────────────────
 function getYears(){
   const s=new Set();
   for(const iso of active) {
