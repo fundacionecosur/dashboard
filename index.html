@@ -79,7 +79,8 @@ select{background:var(--surface);border:1.5px solid var(--border);color:var(--te
 input[type="file"] { font-family: 'Barlow', sans-serif; font-size: 0.7rem; color: var(--text2); cursor: pointer; max-width: 170px;}
 
 /* MAIN */
-main{padding:1.6rem 2.2rem;max-width:1600px;margin:0 auto;}
+main{padding:1.6rem 2.2rem;opacity:0;transition:opacity .4s;max-width:1600px;margin:0 auto;}
+main.visible{opacity:1;}
 .section-head{display:flex;align-items:baseline;gap:.8rem;margin-bottom:.9rem;}
 .section-title{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;color:var(--eco-dark);letter-spacing:.16em;text-transform:uppercase;padding-left:.65rem;border-left:3px solid var(--eco-blue);}
 
@@ -130,7 +131,7 @@ footer{background:var(--eco-navy);padding:.9rem 2.2rem;display:flex;align-items:
     </div>
   </div>
   <div class="status-row">
-    <div class="status-pill"><div class="status-dot" id="status-dot" style="background:#fbbf24;"></div><span id="status-text">Buscando actualización...</span></div>
+    <div class="status-pill"><div class="status-dot" id="status-dot" style="background:#fbbf24;"></div><span id="status-text">Buscando actualización en la nube...</span></div>
     <button id="theme-toggle" onclick="toggleTheme()" style="margin-left:auto;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.20);border-radius:3px;padding:.2rem .65rem;cursor:pointer;font-family:'Barlow',sans-serif;font-size:.6rem;color:var(--eco-light);letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:.35rem;line-height:1;">
       <span id="theme-icon" style="display:flex;align-items:center;line-height:1;"></span>
       <span id="theme-label">Modo oscuro</span>
@@ -160,13 +161,9 @@ footer{background:var(--eco-navy);padding:.9rem 2.2rem;display:flex;align-items:
       <select id="yr-end"></select>
     </div>
   </div>
-  <div style="padding-left: 1rem; border-left: 1px solid var(--border);">
-    <div class="ctrl-label">Carga Manual (Opcional)</div>
-    <input type="file" id="csv-upload" accept=".csv" title="Sube tu propio CSV si la búsqueda automática falla" />
-  </div>
 </div>
 
-<main id="main">
+<main id="main" class="visible">
   <div class="section-head" style="align-items:center;flex-wrap:wrap;gap:.5rem;">
     <div class="section-title" style="flex:1 1 auto;"><span id="kpi-country-label">Argentina</span> · Indicadores Seleccionados</div>
     <div style="display:flex;align-items:flex-end;gap:1rem;flex-shrink:0;">
@@ -190,7 +187,7 @@ footer{background:var(--eco-navy);padding:.9rem 2.2rem;display:flex;align-items:
 </footer>
 
 <script>
-// ── LISTA DE INDICADORES ─────────────────────────────────────────────────────
+// ── LISTA DE INDICADORES (Traducción y Mapeo) ────────────────────────────────
 const INDICATORS_MAP = [
   { id: 'v1', en: 'Gross domestic product (GDP), Current prices, US dollar', es: 'PIB (USD)' },
   { id: 'v2', en: 'Gross domestic product (GDP), Current prices, Per capita, US dollar', es: 'PIB Per Cápita' },
@@ -205,13 +202,13 @@ const INDICATORS_MAP = [
 ];
 
 const ALL_COUNTRIES = {
-  ARG:{name:"Argentina",flag:"\ud83c\udde6\ud83c\uddf7",region:false},
-  BRA:{name:"Brasil",flag:"\ud83c\udde7\ud83c\uddf7",region:false},
-  CHL:{name:"Chile",flag:"\ud83c\udde8\ud83c\uddf1",region:false},
-  MEX:{name:"México",flag:"\ud83c\uddf2\ud83c\uddfd",region:false},
-  USA:{name:"EE.UU.",flag:"\ud83c\uddfa\ud83c\uddf8",region:false},
-  DEU:{name:"Alemania",flag:"\ud83c\udde9\ud83c\uddea",region:false},
-  CHN:{name:"China",flag:"\ud83c\udde8\ud83c\uddf3",region:false}
+  ARG:{name:"Argentina",flag:"🇦🇷",region:false},
+  BRA:{name:"Brasil",flag:"🇧🇷",region:false},
+  CHL:{name:"Chile",flag:"🇨🇱",region:false},
+  MEX:{name:"México",flag:"🇲🇽",region:false},
+  USA:{name:"EE.UU.",flag:"🇺🇸",region:false},
+  DEU:{name:"Alemania",flag:"🇩🇪",region:false},
+  CHN:{name:"China",flag:"🇨🇳",region:false}
 };
 
 const DEFAULT_ACTIVE = ['ARG','BRA','CHL','MEX','USA','DEU','CHN'];
@@ -222,9 +219,10 @@ let yearStart = 2000, yearEnd = 2026;
 let kpiIso = 'ARG', kpiYear = 2025;
 let rawData = {};
 let charts = {};
+// Mantenemos siempre 6 variables seleccionadas por defecto
 let selectedVariables = ['v1', 'v2', 'v3', 'v4', 'v5', 'v6']; 
 
-// ── PARSER DE CSV AUTOMÁTICO (VÍA GITHUB) ────────────────────────────────────
+// ── PARSER DE CSV AUTOMÁTICO (VÍA GITHUB API) ────────────────────────────────
 async function fetchAndProcessWEO() {
     const statusText = document.getElementById('status-text');
     const statusDot = document.getElementById('status-dot');
@@ -233,29 +231,29 @@ async function fetchAndProcessWEO() {
         statusText.textContent = 'Buscando el último CSV en la nube...';
         
         // ¡IMPORTANTE! REEMPLAZA ESTO CON TU USUARIO EXACTO EN GITHUB
-        const GITHUB_REPO = 'AQUI_TU_USUARIO/dashboard'; 
+        // 👉 Cambia "fundacion-ecosur" por tu nombre de usuario real en GitHub
+        const GITHUB_REPO = 'fundacion-ecosur/dashboard'; 
         
-        // 1. Le pedimos a GitHub la lista de archivos en tu carpeta
+        // 1. Pedir a GitHub la lista de archivos
         const apiResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/`);
         if (!apiResponse.ok) throw new Error('No se pudo conectar con el repositorio. Revisa el nombre del usuario/repo.');
         
         const files = await apiResponse.json();
         
-        // 2. Filtramos solo los archivos que terminan en .csv
+        // 2. Filtrar solo los archivos CSV
         const csvFiles = files.filter(f => f.name.endsWith('.csv'));
         if (csvFiles.length === 0) throw new Error('No se encontraron archivos CSV en el repositorio.');
 
-        // 3. Ordenamos los archivos (de la Z a la A) para tener el más nuevo por nombre/fecha
+        // 3. Ordenar para obtener el más reciente (alfabéticamente Z a A)
         csvFiles.sort((a, b) => b.name.localeCompare(a.name));
         const latestCSV = csvFiles[0];
 
         statusText.textContent = `Descargando: ${latestCSV.name.substring(0, 20)}...`;
 
-        // 4. Descargamos la data del archivo más nuevo
+        // 4. Descargar y procesar
         const csvDataResponse = await fetch(latestCSV.download_url);
         const csvText = await csvDataResponse.text();
         
-        // 5. Procesamos los datos en el dashboard
         processCSV(csvText);
         
         statusText.textContent = 'Sincronizado con el último WEO';
@@ -263,14 +261,14 @@ async function fetchAndProcessWEO() {
         
     } catch (e) {
         console.warn(e);
-        statusText.textContent = 'Error buscando el WEO en la nube. Usa la carga manual.';
+        statusText.textContent = 'Error: No se pudo cargar de GitHub.';
         statusDot.style.background = '#c0392b';
-        document.getElementById('kpi-container').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 2rem;">No se pudo cargar el último CSV automáticamente. Usa el botón "Carga Manual (Opcional)" para subirlo.</div>';
+        document.getElementById('kpi-container').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--red);">No se pudo cargar el último CSV automáticamente. Por favor, revisa la configuración del repositorio en el código.</div>';
         document.getElementById('charts-wrapper').innerHTML = '';
     }
 }
 
-// ── PARSER GENÉRICO (Para Auto y Manual) ─────────────────────────────────────
+// ── PROCESADOR DE CSV INTERNO ────────────────────────────────────────────────
 function parseCSVRow(str) {
     let result = [];
     let cur = '';
@@ -305,7 +303,7 @@ function processCSV(text) {
     if (indIdx === -1) indIdx = headers.indexOf('subject descriptor');
 
     if (seriesCodeIdx === -1 || indIdx === -1) {
-        alert('Error: CSV inválido. Faltan columnas clave.');
+        alert('Error: CSV inválido. Faltan columnas de país o indicador.');
         return;
     }
 
@@ -358,21 +356,7 @@ function processCSV(text) {
     renderAll();
 }
 
-// ── EVENTO CARGA MANUAL (Fallback local) ─────────────────────────────────────
-document.getElementById('csv-upload').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        processCSV(e.target.result);
-        document.getElementById('status-dot').style.background = '#4ade80';
-        document.getElementById('status-text').textContent = 'Base Cargada (Modo Manual)';
-    };
-    reader.readAsText(file);
-});
-
-// ── CONTROLES GENERALES ──────────────────────────────────────────────────────
+// ── CONTROLES Y DROPDOWNS ────────────────────────────────────────────────────
 function buildControls(){
   const ys=document.getElementById('yr-start'), ye=document.getElementById('yr-end');
   for(let y=1980;y<=2030;y++){
@@ -470,7 +454,6 @@ document.addEventListener('click', e => {
   if (!varWrap.contains(e.target)) varDd.classList.remove('open');
 });
 
-// ── CHIPS PARA LOS PAÍSES ────────────────────────────────────────────────────
 function buildChips(){
   const row=document.getElementById('chips-row'); row.innerHTML='';
   [...active].forEach(iso=>{
@@ -515,7 +498,7 @@ function fillDdList(list,si){
   });
 }
 
-// ── EXTRACCIÓN Y RENDERIZACIÓN ───────────────────────────────────────────────
+// ── RENDERIZACIÓN DE GRÁFICOS Y KPIs ─────────────────────────────────────────
 function getYears(){
   const s=new Set();
   for(const iso of active) {
