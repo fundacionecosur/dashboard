@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitor Macroeconómico · Fundación ECOSUR</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --eco-navy:  #061430;
+  --eco-dark:  #033267;
+  --eco-blue:  #368DC5;
+  --eco-teal:  #409DAF;
+  --eco-slate: #44546A;
+  --eco-light: #B6CFE0;
+  --bg:        #f4f7fa;
+  --surface:   #ffffff;
+  --surface2:  #eef3f8;
+  --border:    #d4e2ed;
+  --text:      #061430;
+  --text2:     #44546A;
+  --text3:     #8fa3b8;
+  --green:     #1e7d5c;
+  --red:       #c0392b;
+  --heading:   #061430;
+}
+body.dark-mode {
+  --bg:        #0d1520;
+  --surface:   #162032;
+  --surface2:  #1c2a40;
+  --border:    #2a3d55;
+  --text:      #f0f6fa;
+  --text2:     #d0e4f0;
+  --text3:     #8aaec8;
+  --heading:   #f0f6fa;
+}
+body.dark-mode header{background:#0a1220;}
+body.dark-mode .kpi-number,
+body.dark-mode .chart-title,
+body.dark-mode .section-title {
+  color: var(--heading);
+}
+body.dark-mode .kpi-card::after{opacity:.7;}
+#theme-toggle svg{display:block;flex-shrink:0;}
+*{margin:0;padding:0;box-sizing:border-box;transition:background-color .25s,color .25s,border-color .25s;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;min-height:100vh;}
+
+/* HEADER */
+header{background:var(--eco-navy);}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2.2rem;border-bottom:3px solid var(--eco-blue);}
+.header-title{font-family:'Barlow Condensed',sans-serif;font-size:1.45rem;font-weight:700;color:#fff;letter-spacing:.04em;text-transform:uppercase;text-align:right;}
+.header-sub{font-size:.65rem;font-weight:300;color:var(--eco-light);letter-spacing:.1em;text-transform:uppercase;margin-top:.25rem;text-align:right;}
+.status-row{display:flex;align-items:center;gap:1.5rem;padding:.4rem 2.2rem;background:rgba(0,0,0,.22);}
+.status-pill{display:flex;align-items:center;gap:.4rem;font-size:.63rem;color:var(--eco-light);letter-spacing:.08em;text-transform:uppercase;}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;}
+#status-text{color:#fff;font-weight:500;}
+
+/* CONTROLS */
+.controls-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:.8rem 2.2rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(6,20,48,.06);}
+.ctrl-label{font-size:.6rem;font-weight:600;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.3rem;}
+.chips-row{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;}
+.chip{font-size:.72rem;font-weight:500;padding:.22rem .6rem;border:1.5px solid var(--border);border-radius:3px;background:transparent;color:var(--text2);cursor:pointer;transition:all .13s;font-family:'Barlow',sans-serif;}
+.chip:hover{border-color:var(--eco-blue);color:var(--eco-blue);}
+.chip.active{background:var(--eco-blue);border-color:var(--eco-blue);color:#fff;}
+.add-btn{font-size:.72rem;font-weight:600;padding:.22rem .65rem;border:1.5px dashed var(--eco-blue);border-radius:3px;background:transparent;color:var(--eco-blue);cursor:pointer;font-family:'Barlow',sans-serif;transition:all .13s;}
+.add-btn:hover{background:var(--eco-blue);color:#fff;}
+.dropdown-wrap{position:relative;display:inline-block;}
+.country-dropdown{display:none;position:absolute;top:calc(100% + 5px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:4px;box-shadow:0 6px 20px rgba(6,20,48,.14);z-index:300;min-width:190px;max-height:350px;overflow-y:auto;}
+.country-dropdown.open{display:block;}
+.dropdown-search{width:100%;padding:.45rem .75rem;border:none;border-bottom:1px solid var(--border);font-family:'Barlow',sans-serif;font-size:.75rem;outline:none;background:var(--surface2);color:var(--text);position:sticky;top:0;}
+.dropdown-item{display:flex;align-items:center;gap:.45rem;padding:.45rem .75rem;font-size:.75rem;cursor:pointer;color:var(--text2);transition:background .1s;}
+.dropdown-item:hover{background:var(--surface2);}
+.dropdown-item.selected{color:var(--eco-blue);font-weight:600;background:var(--surface2);}
+.dropdown-item .chk{width:15px;text-align:center;font-size:.62rem;font-weight:bold;}
+.year-row{display:flex;align-items:center;gap:.45rem;}
+select{background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:'Barlow',sans-serif;font-size:.75rem;padding:.22rem 1.3rem .22rem .55rem;border-radius:3px;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2344546A'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .4rem center;background-color:var(--surface);}
+.sep{color:var(--text3);font-size:.7rem;}
+input[type="file"] { font-family: 'Barlow', sans-serif; font-size: 0.7rem; color: var(--text2); cursor: pointer; max-width: 170px;}
+
+/* MAIN */
+main{padding:1.6rem 2.2rem;max-width:1600px;margin:0 auto;}
+.section-head{display:flex;align-items:baseline;gap:.8rem;margin-bottom:.9rem;}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;color:var(--eco-dark);letter-spacing:.16em;text-transform:uppercase;padding-left:.65rem;border-left:3px solid var(--eco-blue);}
+
+/* KPI - 6 cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1.6rem;border-radius:4px;overflow:hidden;}
+.kpi-card{background:var(--surface);padding:1rem 1.1rem;position:relative;}
+.kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi-card.k0::after{background:var(--eco-blue);}
+.kpi-card.k1::after{background:var(--eco-teal);}
+.kpi-card.k2::after{background:var(--eco-navy);}
+.kpi-card.k3::after{background:var(--eco-slate);}
+.kpi-card.k4::after{background:var(--eco-dark);}
+.kpi-card.k5::after{background:var(--eco-light);}
+.kpi-label{font-size:.58rem;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem;min-height: 16px;}
+.kpi-number{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:700;color:var(--eco-navy);line-height:1;}
+.kpi-year{font-size:.58rem;color:var(--text3);margin-top:.15rem;}
+
+/* CHARTS (Strictly 3 rows, 2 columns) */
+.charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.1rem; margin-bottom: 1.6rem; }
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.1rem 1.3rem;}
+.chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.9rem;}
+.chart-title{font-family:'Barlow Condensed',sans-serif;font-size:.98rem;font-weight:700;color:var(--eco-navy);line-height:1.1;}
+.chart-desc{font-size:.63rem;color:var(--text3);margin-top:.18rem;letter-spacing:.04em;}
+.chart-container{position:relative;height:310px;}
+
+/* FOOTER */
+footer{background:var(--eco-navy);padding:.9rem 2.2rem;display:flex;align-items:center;justify-content:space-between;}
+.footer-note{font-size:.6rem;color:rgba(255,255,255,.38);letter-spacing:.04em;}
+.footer-brand{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:600;color:var(--eco-light);letter-spacing:.08em;text-transform:uppercase;}
+
+@media(max-width:1200px){
+  .kpi-grid {grid-template-columns:repeat(3,1fr);}
+}
+@media(max-width:800px){
+  .header-top,.controls-bar,main,footer{padding-left:1rem;padding-right:1rem;}
+  .kpi-grid {grid-template-columns:1fr 1fr;}
+  .charts-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <div class="header-title">Monitor Macroeconómico Interactivo</div>
+      <div class="header-sub">Datos WEO - FMI Automatizados</div>
+    </div>
+  </div>
+  <div class="status-row">
+    <div class="status-pill"><div class="status-dot" id="status-dot" style="background:#fbbf24;"></div><span id="status-text">Buscando actualización...</span></div>
+    <button id="theme-toggle" onclick="toggleTheme()" style="margin-left:auto;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.20);border-radius:3px;padding:.2rem .65rem;cursor:pointer;font-family:'Barlow',sans-serif;font-size:.6rem;color:var(--eco-light);letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:.35rem;line-height:1;">
+      <span id="theme-icon" style="display:flex;align-items:center;line-height:1;"></span>
+      <span id="theme-label">Modo oscuro</span>
+    </button>
+  </div>
+</header>
+
+<div class="controls-bar">
+  <div>
+    <div class="ctrl-label">1. Seleccione Exactamente 6 Variables</div>
+    <div class="dropdown-wrap" id="var-dropdown-wrap">
+      <button class="add-btn" id="var-btn" style="border: 1.5px solid var(--eco-blue); color: var(--eco-blue); width: 200px; text-align: left;">Seleccionadas: 6/6</button>
+      <div class="country-dropdown" id="var-dd" style="width: 320px;">
+        <div id="var-list"></div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="ctrl-label">2. Países activos</div>
+    <div class="chips-row" id="chips-row"></div>
+  </div>
+  <div style="margin-left: auto;">
+    <div class="ctrl-label">Período de Análisis</div>
+    <div class="year-row">
+      <select id="yr-start"></select>
+      <span class="sep">→</span>
+      <select id="yr-end"></select>
+    </div>
+  </div>
+  <div style="padding-left: 1rem; border-left: 1px solid var(--border);">
+    <div class="ctrl-label">Carga Manual (Opcional)</div>
+    <input type="file" id="csv-upload" accept=".csv" title="Sube tu propio CSV si la búsqueda automática falla" />
+  </div>
+</div>
+
+<main id="main">
+  <div class="section-head" style="align-items:center;flex-wrap:wrap;gap:.5rem;">
+    <div class="section-title" style="flex:1 1 auto;"><span id="kpi-country-label">Argentina</span> · Indicadores Seleccionados</div>
+    <div style="display:flex;align-items:flex-end;gap:1rem;flex-shrink:0;">
+      <div><div class="ctrl-label" style="font-size:.55rem;">País/Región (Resumen)</div><select id="kpi-iso-sel" style="font-family:'Barlow',sans-serif;font-size:.68rem;border:1px solid var(--border);border-radius:3px;padding:.2rem .45rem;background:var(--surface);color:var(--text2);cursor:pointer;appearance:auto;"></select></div>
+      <div><div class="ctrl-label" style="font-size:.55rem;">Año KPI</div><select id="kpi-yr-sel" style="font-family:'Barlow',sans-serif;font-size:.68rem;border:1px solid var(--border);border-radius:3px;padding:.2rem .45rem;background:var(--surface);color:var(--text2);cursor:pointer;appearance:auto;"></select></div>
+    </div>
+  </div>
+  <div class="kpi-grid" id="kpi-container">
+    <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text3);">Buscando el archivo más reciente en la nube...</div>
+  </div>
+
+  <div class="section-head"><div class="section-title">Evolución de Variables (Gráficos)</div></div>
+  <div class="charts-grid" id="charts-wrapper">
+    <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text3);">Buscando el archivo más reciente en la nube...</div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-note">Fuente: Sincronizado automáticamente a través de Github API leyendo el último CSV de WEO subido.</div>
+  <div class="footer-brand">Dashboard WEO Interactivo</div>
+</footer>
+
+<script>
+// ── LISTA DE INDICADORES ─────────────────────────────────────────────────────
+const INDICATORS_MAP = [
+  { id: 'v1', en: 'Gross domestic product (GDP), Current prices, US dollar', es: 'PIB (USD)' },
+  { id: 'v2', en: 'Gross domestic product (GDP), Current prices, Per capita, US dollar', es: 'PIB Per Cápita' },
+  { id: 'v3', en: 'Revenue, General government, Percent of GDP', es: 'Ingresos Totales' },
+  { id: 'v4', en: 'Expenditure, General government, Percent of GDP', es: 'Gastos Totales' },
+  { id: 'v5', en: 'Exports of goods and services, Volume, Free on board (FOB), Percent change', es: 'Exportaciones de bienes y servicios (FOB)' },
+  { id: 'v6', en: 'Imports of goods and services, Volume, Cost insurance freight (CIF), Percent change', es: 'Importaciones de bienes y servicios (CIF)' },
+  { id: 'v7', en: 'Gross debt, General government, Percent of GDP', es: 'Deuda Bruta' },
+  { id: 'v8', en: 'Gross domestic product (GDP), Constant prices, Per capita, purchasing power parity (PPP) international dollar, ICP benchmark 2021', es: 'PIB Per Cápita (PPP)' },
+  { id: 'v9', en: 'Gross capital formation, Percent of GDP', es: 'FORMACIÓN DE CAPITAL' },
+  { id: 'v10', en: 'Rate, Domestic currency per international dollar in PPP terms, ICP benchmarks 2017-2021', es: 'Tipo de cambio (PPP)' }
+];
+
+const ALL_COUNTRIES = {
+  ARG:{name:"Argentina",flag:"\ud83c\udde6\ud83c\uddf7",region:false},
+  BRA:{name:"Brasil",flag:"\ud83c\udde7\ud83c\uddf7",region:false},
+  CHL:{name:"Chile",flag:"\ud83c\udde8\ud83c\uddf1",region:false},
+  MEX:{name:"México",flag:"\ud83c\uddf2\ud83c\uddfd",region:false},
+  USA:{name:"EE.UU.",flag:"\ud83c\uddfa\ud83c\uddf8",region:false},
+  DEU:{name:"Alemania",flag:"\ud83c\udde9\ud83c\uddea",region:false},
+  CHN:{name:"China",flag:"\ud83c\udde8\ud83c\uddf3",region:false}
+};
+
+const DEFAULT_ACTIVE = ['ARG','BRA','CHL','MEX','USA','DEU','CHN'];
+const COLORS = { ARG:'#368DC5',BRA:'#061430',CHL:'#e05a3a',MEX:'#1a6b3c',USA:'#44546A',DEU:'#c89f00',CHN:'#c0392b' };
+
+let active = new Set(DEFAULT_ACTIVE);
+let yearStart = 2000, yearEnd = 2026;
+let kpiIso = 'ARG', kpiYear = 2025;
+let rawData = {};
+let charts = {};
+let selectedVariables = ['v1', 'v2', 'v3', 'v4', 'v5', 'v6']; 
+
+// ── PARSER DE CSV AUTOMÁTICO (VÍA GITHUB) ────────────────────────────────────
+async function fetchAndProcessWEO() {
+    const statusText = document.getElementById('status-text');
+    const statusDot = document.getElementById('status-dot');
+    
+    try {
+        statusText.textContent = 'Buscando el último CSV en la nube...';
+        
+        // ¡IMPORTANTE! REEMPLAZA ESTO CON TU USUARIO EXACTO EN GITHUB
+        const GITHUB_REPO = 'AQUI_TU_USUARIO/dashboard'; 
+        
+        // 1. Le pedimos a GitHub la lista de archivos en tu carpeta
+        const apiResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/`);
+        if (!apiResponse.ok) throw new Error('No se pudo conectar con el repositorio. Revisa el nombre del usuario/repo.');
+        
+        const files = await apiResponse.json();
+        
+        // 2. Filtramos solo los archivos que terminan en .csv
+        const csvFiles = files.filter(f => f.name.endsWith('.csv'));
+        if (csvFiles.length === 0) throw new Error('No se encontraron archivos CSV en el repositorio.');
+
+        // 3. Ordenamos los archivos (de la Z a la A) para tener el más nuevo por nombre/fecha
+        csvFiles.sort((a, b) => b.name.localeCompare(a.name));
+        const latestCSV = csvFiles[0];
+
+        statusText.textContent = `Descargando: ${latestCSV.name.substring(0, 20)}...`;
+
+        // 4. Descargamos la data del archivo más nuevo
+        const csvDataResponse = await fetch(latestCSV.download_url);
+        const csvText = await csvDataResponse.text();
+        
+        // 5. Procesamos los datos en el dashboard
+        processCSV(csvText);
+        
+        statusText.textContent = 'Sincronizado con el último WEO';
+        statusDot.style.background = '#4ade80';
+        
+    } catch (e) {
+        console.warn(e);
+        statusText.textContent = 'Error buscando el WEO en la nube. Usa la carga manual.';
+        statusDot.style.background = '#c0392b';
+        document.getElementById('kpi-container').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 2rem;">No se pudo cargar el último CSV automáticamente. Usa el botón "Carga Manual (Opcional)" para subirlo.</div>';
+        document.getElementById('charts-wrapper').innerHTML = '';
+    }
+}
+
+// ── PARSER GENÉRICO (Para Auto y Manual) ─────────────────────────────────────
+function parseCSVRow(str) {
+    let result = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < str.length; i++) {
+        if (inQuotes) {
+            if (str[i] === '"') {
+                if (i + 1 < str.length && str[i + 1] === '"') { cur += '"'; i++; }
+                else { inQuotes = false; }
+            } else { cur += str[i]; }
+        } else {
+            if (str[i] === '"') { inQuotes = true; }
+            else if (str[i] === ',') { result.push(cur); cur = ''; }
+            else { cur += str[i]; }
+        }
+    }
+    result.push(cur);
+    return result;
+}
+
+function processCSV(text) {
+    const lines = text.split('\n').filter(line => line.trim().length > 0);
+    if (lines.length < 2) return;
+
+    const headers = parseCSVRow(lines[0]).map(h => h.trim().toLowerCase());
+    
+    let seriesCodeIdx = headers.indexOf('series_code');
+    if (seriesCodeIdx === -1) seriesCodeIdx = headers.indexOf('weo country code');
+    if (seriesCodeIdx === -1) seriesCodeIdx = headers.indexOf('iso');
+    
+    let indIdx = headers.indexOf('indicator');
+    if (indIdx === -1) indIdx = headers.indexOf('subject descriptor');
+
+    if (seriesCodeIdx === -1 || indIdx === -1) {
+        alert('Error: CSV inválido. Faltan columnas clave.');
+        return;
+    }
+
+    const yearIndices = {};
+    headers.forEach((h, i) => {
+        const yr = parseInt(h);
+        if (!isNaN(yr) && yr >= 1980 && yr <= 2030) yearIndices[yr] = i;
+    });
+
+    const parsedData = {};
+
+    for (let i = 1; i < lines.length; i++) {
+        const vals = parseCSVRow(lines[i]).map(v => v.trim());
+        if (vals.length <= Math.max(seriesCodeIdx, indIdx)) continue;
+
+        const seriesCode = vals[seriesCodeIdx];
+        let iso = seriesCode;
+        if (seriesCode && seriesCode.includes('.')) iso = seriesCode.split('.')[0];
+        if (!iso) continue;
+
+        const indicatorNameEn = vals[indIdx];
+        const matchedInd = INDICATORS_MAP.find(ind => ind.en.toLowerCase() === indicatorNameEn.toLowerCase());
+        if (!matchedInd) continue;
+
+        if (!ALL_COUNTRIES[iso]) {
+            let cName = iso;
+            const countryIdx = headers.indexOf('country');
+            if (countryIdx !== -1 && vals[countryIdx]) cName = vals[countryIdx];
+            ALL_COUNTRIES[iso] = { name: cName, flag: "🌐", region: false };
+            COLORS[iso] = '#' + Math.floor(Math.random()*16777215).toString(16);
+        }
+
+        if (!parsedData[iso]) parsedData[iso] = {};
+        if (!parsedData[iso][matchedInd.id]) parsedData[iso][matchedInd.id] = {};
+
+        for (const [year, idx] of Object.entries(yearIndices)) {
+            if (vals[idx] && vals[idx] !== 'n/a' && vals[idx] !== '--') {
+                const cleanVal = vals[idx].replace(/,/g, '');
+                const floatVal = parseFloat(cleanVal);
+                if (!isNaN(floatVal)) {
+                    parsedData[iso][matchedInd.id][year] = floatVal;
+                }
+            }
+        }
+    }
+
+    rawData = parsedData;
+    populateCountrySelectors();
+    buildChips();
+    renderAll();
+}
+
+// ── EVENTO CARGA MANUAL (Fallback local) ─────────────────────────────────────
+document.getElementById('csv-upload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        processCSV(e.target.result);
+        document.getElementById('status-dot').style.background = '#4ade80';
+        document.getElementById('status-text').textContent = 'Base Cargada (Modo Manual)';
+    };
+    reader.readAsText(file);
+});
+
+// ── CONTROLES GENERALES ──────────────────────────────────────────────────────
+function buildControls(){
+  const ys=document.getElementById('yr-start'), ye=document.getElementById('yr-end');
+  for(let y=1980;y<=2030;y++){
+    ys.innerHTML+=`<option ${y===yearStart?'selected':''} value="${y}">${y}</option>`;
+    ye.innerHTML+=`<option ${y===yearEnd?'selected':''} value="${y}">${y}</option>`;
+  }
+  ys.onchange=()=>{yearStart=+ys.value;renderAll();};
+  ye.onchange=()=>{yearEnd=+ye.value;renderAll();};
+
+  const kySelEl=document.getElementById('kpi-yr-sel');
+  for(let y=1980;y<=2030;y++){
+    const o=document.createElement('option');
+    o.value=y; o.textContent=y;
+    if(y===kpiYear) o.selected=true;
+    kySelEl.appendChild(o);
+  }
+  kySelEl.onchange=()=>{ kpiYear=+kySelEl.value; renderKPIs(); };
+
+  buildVarSelector();
+  populateCountrySelectors();
+  buildChips();
+}
+
+function populateCountrySelectors() {
+  const kiSel=document.getElementById('kpi-iso-sel');
+  kiSel.innerHTML = '';
+  const entries = Object.entries(ALL_COUNTRIES).sort((a,b)=>a[1].name.localeCompare(b[1].name,'es'));
+  for(const [iso,c] of entries){
+    const o=document.createElement('option');
+    o.value=iso; o.textContent=c.flag + ' ' + c.name;
+    if(iso===kpiIso) o.selected=true;
+    kiSel.appendChild(o);
+  }
+  kiSel.onchange=()=>{
+    kpiIso=kiSel.value;
+    document.getElementById('kpi-country-label').textContent=ALL_COUNTRIES[kpiIso]?.name||kpiIso;
+    renderKPIs();
+  };
+}
+
+function buildVarSelector() {
+  const list = document.getElementById('var-list');
+  list.innerHTML = '';
+  
+  INDICATORS_MAP.forEach(ind => {
+    const item = document.createElement('div');
+    const isSelected = selectedVariables.includes(ind.id);
+    const isMaxedOut = !isSelected && selectedVariables.length >= 6;
+    
+    item.className = 'dropdown-item' + (isSelected ? ' selected' : '');
+    item.innerHTML = `<span class="chk">${isSelected ? '✓' : ''}</span><span style="font-size:0.7rem; white-space: normal;">${ind.es}</span>`;
+    
+    if (isMaxedOut) {
+      item.style.opacity = '0.4';
+      item.style.cursor = 'not-allowed';
+    }
+
+    item.onclick = (e) => {
+      e.stopPropagation();
+      
+      if (isSelected) {
+        selectedVariables = selectedVariables.filter(v => v !== ind.id);
+      } else {
+        if (selectedVariables.length < 6) {
+          selectedVariables.push(ind.id);
+        }
+      }
+      
+      const varBtn = document.getElementById('var-btn');
+      varBtn.textContent = `Seleccionadas: ${selectedVariables.length}/6`;
+      
+      if (selectedVariables.length === 6) {
+          varBtn.style.borderColor = 'var(--eco-blue)';
+          varBtn.style.color = 'var(--eco-blue)';
+          renderAll(); 
+      } else {
+          varBtn.style.borderColor = 'var(--red)';
+          varBtn.style.color = 'var(--red)';
+      }
+      
+      buildVarSelector(); 
+    };
+    list.appendChild(item);
+  });
+}
+
+const varWrap = document.getElementById('var-dropdown-wrap');
+const varBtn = document.getElementById('var-btn');
+const varDd = document.getElementById('var-dd');
+varBtn.onclick = (e) => {
+  e.stopPropagation();
+  varDd.classList.toggle('open');
+};
+document.addEventListener('click', e => {
+  if (!varWrap.contains(e.target)) varDd.classList.remove('open');
+});
+
+// ── CHIPS PARA LOS PAÍSES ────────────────────────────────────────────────────
+function buildChips(){
+  const row=document.getElementById('chips-row'); row.innerHTML='';
+  [...active].forEach(iso=>{
+    const c=ALL_COUNTRIES[iso]; if(!c) return;
+    const el=document.createElement('button');
+    el.className='chip active'; el.dataset.iso=iso;
+    el.innerHTML='<span style="font-size:.6rem;font-weight:700;opacity:.75;margin-right:.18rem;">'+iso+'</span>'+c.name;
+    el.onclick=()=>{ if(active.size>1){active.delete(iso);buildChips();renderAll();} };
+    row.appendChild(el);
+  });
+  const wrap=document.createElement('div'); wrap.className='dropdown-wrap';
+  const btn=document.createElement('button'); btn.className='add-btn'; btn.textContent='+ Agregar País';
+  const dd=document.createElement('div'); dd.className='country-dropdown'; dd.id='cdd';
+  const si=document.createElement('input'); si.type='text'; si.placeholder='Buscar país...'; si.className='dropdown-search';
+  dd.appendChild(si);
+  const list=document.createElement('div'); list.id='cdd-list'; dd.appendChild(list);
+  fillDdList(list,si);
+  si.oninput=()=>fillDdList(list,si);
+  btn.onclick=e=>{ e.stopPropagation(); dd.classList.toggle('open'); if(dd.classList.contains('open')) si.focus(); };
+  document.addEventListener('click',e=>{ if(!wrap.contains(e.target)) dd.classList.remove('open'); });
+  wrap.appendChild(btn); wrap.appendChild(dd); row.appendChild(wrap);
+}
+
+function fillDdList(list,si){
+  list.innerHTML='';
+  const q=(si.value||'').toLowerCase();
+  const countries=[];
+  for(const [iso,c] of Object.entries(ALL_COUNTRIES)){
+    if(q && !c.name.toLowerCase().includes(q) && !iso.toLowerCase().includes(q)) continue;
+    countries.push([iso,c]);
+  }
+  countries.sort((a,b)=>a[1].name.localeCompare(b[1].name,'es')).forEach(([i,c])=>{
+    const item=document.createElement('div');
+    item.className='dropdown-item'+(active.has(i)?' selected':'');
+    item.innerHTML='<span class="chk">'+(active.has(i)?'\u2713':'')+' </span><span>'+c.flag+'</span><span>'+c.name+'</span>';
+    item.onclick=e=>{ e.stopPropagation();
+      if(active.has(i)){if(active.size>1)active.delete(i);}else active.add(i);
+      buildChips(); renderAll();
+      setTimeout(()=>{ const nd=document.getElementById('cdd'); if(nd){nd.classList.add('open');nd.querySelector('.dropdown-search')?.focus();}},10);
+    };
+    list.appendChild(item);
+  });
+}
+
+// ── EXTRACCIÓN Y RENDERIZACIÓN ───────────────────────────────────────────────
+function getYears(){
+  const s=new Set();
+  for(const iso of active) {
+      Object.keys(rawData[iso] || {}).forEach(ind => {
+          Object.keys(rawData[iso][ind] || {}).forEach(y => s.add(+y));
+      });
+  }
+  if (s.size === 0) {
+      for(let y=yearStart; y<=yearEnd; y++) s.add(y);
+  }
+  return [...s].filter(y=>y>=yearStart&&y<=yearEnd).sort((a,b)=>a-b);
+}
+
+function series(iso, ind){ 
+  return getYears().map(y=>{ const v=rawData[iso]?.[ind]?.[y]; return(v!=null&&v!=='')?+v:null; }); 
+}
+
+function renderAll(){
+  renderKPIs();
+  renderCharts();
+}
+
+function renderKPIs(){
+  const kpiGrid = document.getElementById('kpi-container');
+  kpiGrid.innerHTML = '';
+  
+  if (selectedVariables.length !== 6) {
+      kpiGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--red); font-weight: bold;">⚠️ Debes seleccionar exactamente 6 variables en el filtro superior.</div>';
+      return;
+  }
+  
+  if (Object.keys(rawData).length === 0) return;
+
+  for (let i = 0; i < 6; i++) {
+      const selectedId = selectedVariables[i];
+      const indInfo = INDICATORS_MAP.find(ind => ind.id === selectedId);
+      const d = rawData[kpiIso] || {};
+      const val = d[selectedId]?.[kpiYear] ?? null;
+
+      const card = document.createElement('div');
+      card.className = `kpi-card k${i}`;
+      card.innerHTML = `
+          <div class="kpi-label" title="${indInfo.en}">${indInfo.es}</div>
+          <div class="kpi-number">${val != null ? val.toLocaleString('es-AR', {maximumFractionDigits: 1}) : '—'}</div>
+          <div class="kpi-year">Año ${kpiYear}</div>
+      `;
+      kpiGrid.appendChild(card);
+  }
+}
+
+const xSc={grid:{color:'#e8eef4'},ticks:{color:'#8fa3b8',font:{family:'Barlow',size:10}},border:{color:'#d4e2ed'}};
+const ySc=()=>({
+    grid:{color:'#e8eef4'},
+    border:{color:'#d4e2ed'},
+    ticks:{
+        color:'#8fa3b8',
+        font:{family:'Barlow',size:10},
+        callback: v => {
+            if (v >= 1e9 || v <= -1e9) return (v / 1e9).toFixed(1) + 'B';
+            if (v >= 1e6 || v <= -1e6) return (v / 1e6).toFixed(1) + 'M';
+            if (v >= 1e3 || v <= -1e3) return (v / 1e3).toFixed(1) + 'k';
+            return v.toLocaleString('es-AR', {maximumFractionDigits: 0});
+        }
+    }
+});
+const ttCfg={backgroundColor:'#fff',borderColor:'#d4e2ed',borderWidth:1,titleColor:'#061430',bodyColor:'#44546A',titleFont:{family:'Barlow Condensed',size:12,weight:'bold'},bodyFont:{family:'Barlow',size:11},padding:10};
+const legCfg={position:'bottom',labels:{color:'#44546A',font:{family:'Barlow',size:10},boxWidth:10,padding:10}};
+
+function mkDs(ind){
+  return [...active].map(iso=>{
+    const c=ALL_COUNTRIES[iso]; 
+    const col=COLORS[iso]||'#368DC5'; 
+    const d=series(iso,ind);
+    return{
+        label:c?.flag+' '+(c?.name||iso),
+        data:d,
+        borderColor:col,
+        backgroundColor:col+'18',
+        borderWidth:1.8,
+        pointRadius:1.5,
+        pointHoverRadius:5,
+        pointBackgroundColor:col,
+        tension:.3,
+        fill:false,
+        spanGaps:true
+    };
+  });
+}
+
+function renderCharts() {
+    const wrapper = document.getElementById('charts-wrapper');
+    wrapper.innerHTML = '';
+    
+    if (selectedVariables.length !== 6) {
+        wrapper.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--red); font-weight: bold;">⚠️ Selecciona exactamente 6 variables para ver los gráficos.</div>';
+        return;
+    }
+
+    if (Object.keys(rawData).length === 0) return;
+    
+    for (let i = 0; i < 6; i++) {
+        const selectedId = selectedVariables[i];
+        const indInfo = INDICATORS_MAP.find(ind => ind.id === selectedId);
+        const canvasId = `chart-canvas-${i}`;
+        
+        const card = document.createElement('div');
+        card.className = 'chart-card';
+        card.innerHTML = `
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">${indInfo.es}</div>
+              <div class="chart-desc">${indInfo.en}</div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="${canvasId}"></canvas>
+          </div>
+        `;
+        wrapper.appendChild(card);
+        
+        if (charts[canvasId]) charts[canvasId].destroy();
+        const ctx = document.getElementById(canvasId)?.getContext('2d');
+        if (!ctx) continue;
+        
+        charts[canvasId] = new Chart(ctx, {
+            type: 'line',
+            data: { labels: getYears(), datasets: mkDs(selectedId) },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: legCfg,
+                    tooltip: {
+                        ...ttCfg,
+                        callbacks: {
+                            label: context => ` ${context.dataset.label}: ${context.parsed.y != null ? context.parsed.y.toLocaleString('es-AR', {maximumFractionDigits: 1}) : '—'}`
+                        }
+                    }
+                },
+                scales: { x: xSc, y: ySc() }
+            }
+        });
+    }
+}
+
+// ── TEMA OSCURO ──────────────────────────────────────────────────────────────
+const svgSun='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+const svgMoon='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+function setThemeIcon(isDark){
+  const el=document.getElementById('theme-icon');
+  if(el) el.innerHTML=isDark?svgSun:svgMoon;
+}
+function toggleTheme(){
+  const isDark=document.body.classList.toggle('dark-mode');
+  setThemeIcon(isDark);
+  document.getElementById('theme-label').textContent=isDark?'Modo claro':'Modo oscuro';
+  setTimeout(()=>renderAll(),50);
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  setThemeIcon(false);
+  buildControls();
+  
+  // INICIA BÚSQUEDA AUTOMÁTICA DEL ARCHIVO EN GITHUB
+  fetchAndProcessWEO();
+});
+</script>
+</body>
+</html>
