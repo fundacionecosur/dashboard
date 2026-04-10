@@ -224,9 +224,9 @@ footer{background:var(--eco-navy);padding:.9rem 2.2rem;display:flex;align-items:
 
 <div id="loading-overlay">
   <img class="loader-logo" id="loader-logo" src="" alt="ECOSUR">
-  <div class="loader-label">Cargando datos · WEO FMI</div>
+  <div class="loader-label">Cargando datos...</div>
   <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
-  <div class="loader-detail" id="loader-detail">Iniciando...</div>
+  <div class="loader-detail" id="loader-detail"></div>
 </div>
 
 <header>
@@ -876,9 +876,9 @@ async function loadData() {
   const detail=document.getElementById('loader-detail');
   const dot=document.getElementById('status-dot');
   const stxt=document.getElementById('status-text');
-  const setP=(p,m)=>{ bar.style.width=p+'%'; if(m) detail.textContent=m; };
+  const setP=(p,m)=>{ bar.style.width=p+'%'; detail.textContent=m || ''; };
 
-  setP(18,'Descargando CSV WEO desde GitHub...');
+  setP(18);
   await new Promise(r=>setTimeout(r,180));
 
   let csvOk=false;
@@ -888,7 +888,7 @@ async function loadData() {
       try{
         const res=await fetch(csvUrl,{cache:'no-store'});
         if(!res.ok) throw new Error('No se pudo descargar el CSV remoto.');
-        setP(52,'Procesando CSV del repositorio...');
+        setP(52);
         const csvText=await res.text();
         rawData=processCSVText(csvText);
         if(!Object.keys(rawData).length) throw new Error('El CSV remoto no devolvió datos utilizables.');
@@ -906,10 +906,10 @@ async function loadData() {
 
   if(!csvOk){
     dot.style.background='#f87171';
-    stxt.textContent='ERROR DE CARGA';
+    stxt.textContent='Error en la carga de datos';
     document.getElementById('update-pill').textContent='CSV REMOTO NO DISPONIBLE';
-    setP(100,'No se pudo cargar el CSV remoto desde GitHub.');
-    throw new Error('No se pudo cargar el CSV remoto desde GitHub.');
+    setP(100,'Error en la carga de datos');
+    throw new Error('Error en la carga de datos');
   }
   setP(100);
   await new Promise(r=>setTimeout(r,280));
@@ -1657,7 +1657,7 @@ function renderTable(){
       }
       return `<td class="${cls}">${fmtValue(ind,value)}</td>`;
     }).join('');
-    tr.innerHTML='<td><div class="flag-cell"><span>'+c.flag+'</span>'+c.name+(row.iso==='ARG'?' \u25c6':'')+'</div></td>'+cells;
+    tr.innerHTML='<td><div class="flag-cell"><span>'+c.flag+'</span>'+c.name+'</div></td>'+cells;
     tbody.appendChild(tr);
   }
 }
