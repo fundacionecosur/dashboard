@@ -147,6 +147,7 @@ main.visible{opacity:1;}
 /* TABLE */
 .table-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:1.1rem;}
 .table-header{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.3rem;border-bottom:1px solid var(--border);background:var(--surface2);}
+.table-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;}
 table{width:100%;border-collapse:collapse;font-size:.78rem;}
 thead th{padding:.45rem 1.1rem;text-align:center;font-size:.58rem;font-weight:700;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border);}
 thead th:first-child{text-align:left;}
@@ -174,12 +175,41 @@ footer{background:var(--eco-navy);padding:.9rem 2.2rem;display:flex;align-items:
 @media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr);}}
 @media(max-width:800px){
   .header-top,.controls-bar,main,footer{padding-left:1rem;padding-right:1rem;}
+  .header-top{flex-direction:column;align-items:flex-start;gap:.8rem;}
+  .header-top>div:last-child{width:100%;}
+  .logo-wrap img{height:36px;}
+  .header-title{font-size:1.02rem;text-align:left;line-height:1.05;}
+  .header-sub{font-size:.54rem;text-align:left;letter-spacing:.08em;line-height:1.35;}
+  .status-row{padding:.45rem 1rem;flex-wrap:wrap;gap:.55rem 1rem;}
+  #theme-toggle{margin-left:0!important;}
   .kpi-grid{grid-template-columns:1fr 1fr;}
   .charts-grid{grid-template-columns:1fr;}
+  .charts-grid-6{grid-template-columns:1fr;}
   .chart-full{grid-column:1;}
+  .chart-card{padding:.95rem .9rem;}
+  .chart-header{margin-bottom:.65rem;}
+  .chart-title{font-size:.9rem;}
+  .chart-desc{font-size:.58rem;line-height:1.35;}
+  .chart-container{height:230px;}
   .controls-bottom{flex-direction:column;align-items:stretch;gap:1rem;}
   .multi-select-wrap,.multi-select-btn{min-width:100%;}
   .multi-select-panel{min-width:100%;max-width:none;}
+  .table-header{align-items:flex-start;gap:.75rem;flex-direction:column;}
+  .table-scroll table{min-width:760px;}
+  .table-scroll thead th:first-child,
+  .table-scroll tbody td:first-child{
+    position:sticky;
+    left:0;
+    z-index:2;
+    background:var(--surface);
+    box-shadow:2px 0 0 var(--border);
+  }
+  .table-scroll thead th:first-child{
+    z-index:3;
+    background:var(--surface2);
+  }
+  body.dark-mode .table-scroll tbody td:first-child{background:#162032;}
+  body.dark-mode .table-scroll thead th:first-child{background:#1c2a40;}
 }
 </style>
 </head>
@@ -304,12 +334,14 @@ footer{background:var(--eco-navy);padding:.9rem 2.2rem;display:flex;align-items:
       <div><div class="chart-title">Resumen por País</div><div class="chart-desc">WEO Oct 2025</div></div>
       <div style="display:flex;align-items:flex-end;gap:.5rem;"><div><div class="ctrl-label" style="font-size:.55rem;">Año</div><select id="table-yr-sel" style="font-family:'Barlow',sans-serif;font-size:.68rem;border:1px solid var(--border);border-radius:3px;padding:.2rem .45rem;background:var(--surface);color:var(--text2);cursor:pointer;"></select></div></div>
     </div>
-    <table>
-      <thead id="table-head"><tr>
-        <th>País</th><th>PIB Real %</th><th>Inflación fin de período %</th><th>Desempleo %</th><th>Cta. Cte. % PIB</th><th>Fiscal Pri. % PIB</th><th>Fiscal Total % PIB</th><th>PIB p/c USD</th>
-      </tr></thead>
-      <tbody id="table-body"></tbody>
-    </table>
+    <div class="table-scroll">
+      <table>
+        <thead id="table-head"><tr>
+          <th>País</th><th>PIB Real %</th><th>Inflación fin de período %</th><th>Desempleo %</th><th>Cta. Cte. % PIB</th><th>Fiscal Pri. % PIB</th><th>Fiscal Total % PIB</th><th>PIB p/c USD</th>
+        </tr></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
   </div>
 </main>
 
@@ -793,6 +825,7 @@ let tableSortKey = 'gdp';
 let tableSortDir = 'desc';
 let rawData = {};
 let charts = {};
+let lastMobileView = null;
 const CSV_URLS = [
   'https://cdn.jsdelivr.net/gh/fundacionecosur/dashboard@main/weo_2025_10.csv',
   'https://raw.githubusercontent.com/fundacionecosur/dashboard/main/weo_2025_10.csv'
@@ -1389,6 +1422,7 @@ function lastVal(iso,ind){
   return null;
 }
 function fmt(v,d=1){ if(v==null) return '\u2014'; return v.toFixed(d).replace('.',','); }
+function isMobileView(){ return window.matchMedia('(max-width: 800px)').matches; }
 
 // RENDER
 function renderAll(){
@@ -1454,7 +1488,21 @@ function renderKPIs(){
     grid.appendChild(card);
   });
 }
-const xSc={grid:{color:'#e8eef4',drawBorder:false},ticks:{color:'#8fa3b8',font:{family:'Barlow',size:10},autoSkip:false,maxRotation:0,minRotation:0},border:{color:'#d4e2ed'}};
+function getXScale(){
+  const mobile=isMobileView();
+  return {
+    grid:{color:'#e8eef4',drawBorder:false},
+    ticks:{
+      color:'#8fa3b8',
+      font:{family:'Barlow',size:mobile?9:10},
+      autoSkip:mobile,
+      maxTicksLimit:mobile?5:undefined,
+      maxRotation:0,
+      minRotation:0
+    },
+    border:{color:'#d4e2ed'}
+  };
+}
 const ySc=(suf='%')=>({grid:{color:'#e8eef4',drawBorder:false},border:{color:'#d4e2ed'},ticks:{color:'#8fa3b8',font:{family:'Barlow',size:10},callback:v=>v.toFixed(Math.abs(v)<1&&v!==0?1:0)+suf}});
 const ttCfg={backgroundColor:'#fff',borderColor:'#d4e2ed',borderWidth:1,titleColor:'#061430',bodyColor:'#44546A',titleFont:{family:'Barlow Condensed',size:12,weight:'bold'},bodyFont:{family:'Barlow',size:11},padding:10};
 const legCfg={position:'bottom',labels:{color:'#44546A',font:{family:'Barlow',size:10},boxWidth:10,padding:10}};
@@ -1498,13 +1546,13 @@ function deMake(id,type,data,options,plugins=[]){
 }
 
 function makeLineChart(id,ind){
-  deMake(id,'line',{labels:getYearLabels(),datasets:mkDs(ind)},{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:legCfg,tooltip:{...ttCfg,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y!=null?fmtTooltip(ctx.parsed.y,ind):'\u2014'}`}}},scales:{x:xSc,y:ySc()}});
+  deMake(id,'line',{labels:getYearLabels(),datasets:mkDs(ind)},{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:legCfg,tooltip:{...ttCfg,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y!=null?fmtTooltip(ctx.parsed.y,ind):'\u2014'}`}}},scales:{x:getXScale(),y:ySc()}});
 }
 function makeBarChart(id,ind){
-  deMake(id,'bar',{labels:getYearLabels(),datasets:mkDs(ind,'bar')},{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:legCfg,tooltip:{...ttCfg,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y!=null?fmtTooltip(ctx.parsed.y,ind):'\u2014'}`}}},scales:{x:{...xSc,stacked:false},y:ySc()}});
+  deMake(id,'bar',{labels:getYearLabels(),datasets:mkDs(ind,'bar')},{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:legCfg,tooltip:{...ttCfg,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y!=null?fmtTooltip(ctx.parsed.y,ind):'\u2014'}`}}},scales:{x:{...getXScale(),stacked:false},y:ySc()}});
 }
 function makeLogChart(id,ind){
-  deMake(id,'line',{labels:getYearLabels(),datasets:mkDs(ind)},{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:legCfg,tooltip:{...ttCfg,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y!=null?fmtTooltip(ctx.parsed.y,ind):'\u2014'}`}}},scales:{x:xSc,y:{type:'logarithmic',grid:{color:'#e8eef4',drawBorder:false},border:{color:'#d4e2ed'},ticks:{color:'#8fa3b8',font:{family:'Barlow',size:10},callback:v=>v<1?v.toFixed(1)+'%':Math.round(v)+'%'}}}});
+  deMake(id,'line',{labels:getYearLabels(),datasets:mkDs(ind)},{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:legCfg,tooltip:{...ttCfg,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y!=null?fmtTooltip(ctx.parsed.y,ind):'\u2014'}`}}},scales:{x:getXScale(),y:{type:'logarithmic',grid:{color:'#e8eef4',drawBorder:false},border:{color:'#d4e2ed'},ticks:{color:'#8fa3b8',font:{family:'Barlow',size:10},callback:v=>v<1?v.toFixed(1)+'%':Math.round(v)+'%'}}}});
 }
 
 const zeroPlugin={id:'zeroLine',afterDraw(chart){
@@ -1513,7 +1561,7 @@ const zeroPlugin={id:'zeroLine',afterDraw(chart){
 }};
 
 function makeLineChartZero(id,ind){
-  deMake(id,'line',{labels:getYearLabels(),datasets:mkDs(ind)},{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:legCfg,tooltip:{...ttCfg,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y!=null?ctx.parsed.y.toFixed(1)+'%PIB':'\u2014'}`}}},scales:{x:xSc,y:ySc('%PIB')}},[zeroPlugin]);
+  deMake(id,'line',{labels:getYearLabels(),datasets:mkDs(ind)},{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:legCfg,tooltip:{...ttCfg,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y!=null?ctx.parsed.y.toFixed(1)+'%PIB':'\u2014'}`}}},scales:{x:getXScale(),y:ySc('%PIB')}},[zeroPlugin]);
 }
 
 function renderTable(){
@@ -1583,6 +1631,14 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   await loadData();
   buildControls();
   renderAll();
+  lastMobileView=isMobileView();
+  window.addEventListener('resize',()=>{
+    const nowMobile=isMobileView();
+    if(nowMobile!==lastMobileView){
+      lastMobileView=nowMobile;
+      renderChartVars();
+    }
+  });
 });
 </script>
 </body>
