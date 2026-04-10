@@ -970,6 +970,52 @@ function parseCSVRow(str){
   return result;
 }
 
+function parseCSVTextRows(text){
+  const rows=[];
+  let row=[];
+  let cur='';
+  let inQuotes=false;
+  const normalized=String(text||'')
+    .replace(/^\uFEFF/,'')
+    .replace(/\r\n/g,'\n')
+    .replace(/\r/g,'\n');
+
+  for(let i=0;i<normalized.length;i++){
+    const ch=normalized[i];
+    const next=normalized[i+1];
+
+    if(ch==='"'){
+      if(inQuotes && next==='"'){
+        cur+='"';
+        i++;
+      } else {
+        inQuotes=!inQuotes;
+      }
+      continue;
+    }
+
+    if(ch===',' && !inQuotes){
+      row.push(cur);
+      cur='';
+      continue;
+    }
+
+    if(ch==='\n' && !inQuotes){
+      row.push(cur);
+      if(row.some(cell=>String(cell).trim()!=='')) rows.push(row);
+      row=[];
+      cur='';
+      continue;
+    }
+
+    cur+=ch;
+  }
+
+  row.push(cur);
+  if(row.some(cell=>String(cell).trim()!=='')) rows.push(row);
+  return rows;
+}
+
 function findHeaderIndex(headers,names){
   const wanted=names.map(normalizeCsvText);
   return headers.findIndex(h=>wanted.includes(normalizeCsvText(h)));
@@ -989,10 +1035,10 @@ function mapCsvIndicator(subjectCode,subjectDescriptor){
 }
 
 function processCSVText(text){
-  const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(line=>line.trim());
-  if(lines.length<2) return {};
+  const rows=parseCSVTextRows(text);
+  if(rows.length<2) return {};
 
-  const headers=parseCSVRow(lines[0]).map(h=>h.trim());
+  const headers=rows[0].map(h=>String(h).trim());
   const isoIdx=findHeaderIndex(headers,['weo country code','country code','iso','iso3']);
   const seriesCodeIdx=findHeaderIndex(headers,['series_code','series code']);
   const subjectCodeIdx=findHeaderIndex(headers,['subject code','weo subject code','indicator code']);
@@ -1009,8 +1055,8 @@ function processCSVText(text){
   const parsed={};
   for(const iso of Object.keys(ALL_COUNTRIES)) parsed[iso]={};
 
-  for(let i=1;i<lines.length;i++){
-    const vals=parseCSVRow(lines[i]).map(v=>v.trim());
+  for(let i=1;i<rows.length;i++){
+    const vals=rows[i].map(v=>String(v).trim());
     const seriesCode=String(vals[seriesCodeIdx]||'').trim();
     const seriesParts=seriesCode.split('.');
     const derivedIso=seriesParts[0]||'';
