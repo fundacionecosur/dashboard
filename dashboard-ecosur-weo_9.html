@@ -295,9 +295,9 @@ footer{background:var(--eco-navy);padding:.9rem 2.2rem;display:flex;align-items:
 
   <!-- Variable selector panel (hidden by default) -->
   <div id="var-panel" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1rem 1.2rem;margin-bottom:1rem;">
-    <div style="font-size:.6rem;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.7rem;">
+    <div style="font-size:.6rem;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.7rem;display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;">
       Seleccionar exactamente 6 variables para los gráficos
-      <span id="var-count-badge" style="margin-left:.5rem;font-size:.6rem;font-weight:700;padding:.1rem .4rem;border-radius:3px;background:var(--eco-blue);color:#fff;">0/6</span>
+      <span id="var-count-badge" style="font-size:.6rem;font-weight:700;padding:.1rem .45rem;border-radius:3px;background:#9fc7e6;color:#fff;">0/6</span>
     </div>
     <div id="var-checkboxes" style="display:grid;grid-template-columns:1fr;gap:.45rem;"></div>
     <div style="margin-top:.8rem;display:flex;gap:.5rem;align-items:center;">
@@ -808,13 +808,13 @@ const VAR_CATALOG = {
   pri:     {label:'Result. Fiscal Primario',            unit:'% PIB', fmt:'pct',   chart:'line_zero', desc:'Gobierno Central · % PIB'},
   fis:     {label:'Result. Fiscal Total',              unit:'% PIB', fmt:'pct',   chart:'line_zero', desc:'Gobierno Central· % PIB'},
   gdpusd:  {label:'PIB (millones de USD)',             unit:'USD',   fmt:'usd',   chart:'line',      desc:'PIB corriente · millones de dólares'},
-  gdppc:   {label:'PIB Per Cápita',                    unit:'USD',   fmt:'usdpc', chart:'line',      desc:'PIB per cápita · USD corriente'},
+  gdppc:   {label:'PIB Per Cápita (USD)',              unit:'USD',   fmt:'usdpc', chart:'line',      desc:'PIB per cápita · USD corriente'},
   gdpppp:  {label:'PIB Per Cápita (PPP)',              unit:'USD',   fmt:'usdpc', chart:'line',      desc:'PIB per cápita · PPP · dólares internacionales · ICP 2021'},
   rev:     {label:'Ingresos Totales',                  unit:'% PIB', fmt:'pct',   chart:'line',      desc:'Ingresos del Gobierno General · % del PIB'},
   exp:     {label:'Gastos Totales',                    unit:'% PIB', fmt:'pct',   chart:'line',      desc:'Gastos del Gobierno General · % del PIB'},
   debt:    {label:'Deuda Bruta',                       unit:'% PIB', fmt:'pct',   chart:'line',      desc:'Deuda bruta · Gobierno General · % del PIB'},
-  exp_x:   {label:'Exportaciones de bienes y serv.',   unit:'%',     fmt:'pct',   chart:'line_zero', desc:'Volumen exportaciones · FOB · Var. %'},
-  imp_x:   {label:'Importaciones de bienes y serv.',   unit:'%',     fmt:'pct',   chart:'line_zero', desc:'Volumen importaciones · CIF · Var. %'},
+  exp_x:   {label:'Exportaciones de bienes y serv.',   unit:'%',     fmt:'pct',   chart:'line_zero', desc:'Volumen exportaciones · FOB · Var. % anual'},
+  imp_x:   {label:'Importaciones de bienes y serv.',   unit:'%',     fmt:'pct',   chart:'line_zero', desc:'Volumen importaciones · CIF · Var. % anual'},
   gfcf:    {label:'Formación bruta de capital',        unit:'% PIB', fmt:'pct',   chart:'line',      desc:'Formación bruta de capital · % del PIB'},
 };
 
@@ -1288,7 +1288,7 @@ function buildControls(){
       const selected = boxes.filter(box => box.checked);
       const limitReached = selected.length >= 6;
       varBadge.textContent = selected.length + '/6';
-      varBadge.style.background = selected.length === 6 ? 'var(--eco-teal)' : 'var(--eco-blue)';
+      varBadge.style.background = selected.length === 6 ? 'var(--eco-teal)' : '#9fc7e6';
       varApply.disabled = selected.length !== 6;
       varApply.style.opacity = varApply.disabled ? '.5' : '1';
       boxes.forEach(box => {
@@ -1511,6 +1511,38 @@ function getXScale(){
   };
 }
 const ySc=(suf='%')=>({grid:{color:'#e8eef4',drawBorder:false},border:{color:'#d4e2ed'},ticks:{color:'#8fa3b8',font:{family:'Barlow',size:10},callback:v=>v.toFixed(Math.abs(v)<1&&v!==0?1:0)+suf}});
+function getYAxisScale(ind,{zero=false}={}){
+  const meta=VAR_CATALOG[ind]||{};
+  const commonGrid={color:'#e8eef4',drawBorder:false};
+  const commonBorder={color:'#d4e2ed'};
+  const commonFont={family:'Barlow',size:10};
+
+  if(meta.fmt==='usd' || meta.fmt==='usdpc'){
+    return {
+      grid:commonGrid,
+      border:commonBorder,
+      ticks:{
+        color:'#8fa3b8',
+        font:commonFont,
+        callback:v=>Number(v).toLocaleString('es-AR')
+      }
+    };
+  }
+
+  if(meta.unit==='% PIB'){
+    return {
+      grid:commonGrid,
+      border:commonBorder,
+      ticks:{
+        color:'#8fa3b8',
+        font:commonFont,
+        callback:v=>v.toFixed(Math.abs(v)<1&&v!==0?1:0)+'%'
+      }
+    };
+  }
+
+  return ySc(zero ? '%' : (meta.unit||'%'));
+}
 const ttCfg={backgroundColor:'#fff',borderColor:'#d4e2ed',borderWidth:1,titleColor:'#061430',bodyColor:'#44546A',titleFont:{family:'Barlow Condensed',size:12,weight:'bold'},bodyFont:{family:'Barlow',size:11},padding:10};
 const legCfg={position:'bottom',labels:{color:'#44546A',font:{family:'Barlow',size:10},boxWidth:10,padding:10}};
 
@@ -1553,10 +1585,10 @@ function deMake(id,type,data,options,plugins=[]){
 }
 
 function makeLineChart(id,ind){
-  deMake(id,'line',{labels:getYearLabels(),datasets:mkDs(ind)},{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:legCfg,tooltip:{...ttCfg,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y!=null?fmtTooltip(ctx.parsed.y,ind):'\u2014'}`}}},scales:{x:getXScale(),y:ySc()}});
+  deMake(id,'line',{labels:getYearLabels(),datasets:mkDs(ind)},{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:legCfg,tooltip:{...ttCfg,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y!=null?fmtTooltip(ctx.parsed.y,ind):'\u2014'}`}}},scales:{x:getXScale(),y:getYAxisScale(ind)}});
 }
 function makeBarChart(id,ind){
-  deMake(id,'bar',{labels:getYearLabels(),datasets:mkDs(ind,'bar')},{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:legCfg,tooltip:{...ttCfg,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y!=null?fmtTooltip(ctx.parsed.y,ind):'\u2014'}`}}},scales:{x:{...getXScale(),stacked:false},y:ySc()}});
+  deMake(id,'bar',{labels:getYearLabels(),datasets:mkDs(ind,'bar')},{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:legCfg,tooltip:{...ttCfg,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y!=null?fmtTooltip(ctx.parsed.y,ind):'\u2014'}`}}},scales:{x:{...getXScale(),stacked:false},y:getYAxisScale(ind)}});
 }
 function makeLogChart(id,ind){
   deMake(id,'line',{labels:getYearLabels(),datasets:mkDs(ind)},{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:legCfg,tooltip:{...ttCfg,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y!=null?fmtTooltip(ctx.parsed.y,ind):'\u2014'}`}}},scales:{x:getXScale(),y:{type:'logarithmic',grid:{color:'#e8eef4',drawBorder:false},border:{color:'#d4e2ed'},ticks:{color:'#8fa3b8',font:{family:'Barlow',size:10},callback:v=>v<1?v.toFixed(1)+'%':Math.round(v)+'%'}}}});
@@ -1568,7 +1600,7 @@ const zeroPlugin={id:'zeroLine',afterDraw(chart){
 }};
 
 function makeLineChartZero(id,ind){
-  deMake(id,'line',{labels:getYearLabels(),datasets:mkDs(ind)},{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:legCfg,tooltip:{...ttCfg,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y!=null?ctx.parsed.y.toFixed(1)+'%PIB':'\u2014'}`}}},scales:{x:getXScale(),y:ySc('%PIB')}},[zeroPlugin]);
+  deMake(id,'line',{labels:getYearLabels(),datasets:mkDs(ind)},{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:legCfg,tooltip:{...ttCfg,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y!=null?fmtTooltip(ctx.parsed.y,ind):'\u2014'}`}}},scales:{x:getXScale(),y:getYAxisScale(ind,{zero:true})}},[zeroPlugin]);
 }
 
 function renderTable(){
