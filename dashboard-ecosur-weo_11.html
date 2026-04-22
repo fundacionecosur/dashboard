@@ -57,11 +57,12 @@ body.dark-mode tbody tr.arg-row:hover{background:#1a3148;}
 body.dark-mode .kpi-card::after{opacity:.7;}
 #theme-toggle svg{display:block;flex-shrink:0;}
 *{margin:0;padding:0;box-sizing:border-box;transition:background-color .25s,color .25s,border-color .25s;}
+html,body{width:100%;max-width:none;}
 body{background:var(--bg);color:var(--text);font-family:'Montserrat',sans-serif;font-size:14px;min-height:100vh;}
 
 /* HEADER */
-header{background:var(--eco-navy);}
-.header-top{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2.2rem;border-bottom:3px solid var(--eco-blue);}
+header{background:var(--eco-navy);width:100%;}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.9rem 2.2rem;border-bottom:3px solid var(--eco-blue);}
 .logo-wrap img{height:46px;display:block;}
 .header-title{font-family:'Montserrat',sans-serif;font-size:1.32rem;font-weight:800;color:#fff;letter-spacing:.04em;text-transform:uppercase;text-align:right;}
 .header-sub{font-size:.65rem;font-weight:300;color:var(--eco-light);letter-spacing:.1em;text-transform:uppercase;margin-top:.25rem;text-align:right;}
@@ -128,6 +129,7 @@ main.visible{opacity:1;}
 .kpi-number{font-family:'Montserrat',sans-serif;font-size:1.72rem;font-weight:800;color:var(--eco-navy);line-height:1;}
 .kpi-unit{font-size:.78rem;font-weight:400;color:var(--text2);}
 .kpi-badge{display:inline-flex;align-items:center;font-size:.58rem;font-weight:600;padding:.12rem .42rem;border-radius:2px;margin-top:.32rem;letter-spacing:.04em;}
+.kpi-badge:empty{display:none;}
 .kpi-badge.pos{background:var(--green-bg);color:var(--green);}
 .kpi-badge.neg{background:var(--red-bg);color:var(--red);}
 .kpi-badge.warn{background:var(--amber-bg);color:var(--amber);}
@@ -135,7 +137,7 @@ main.visible{opacity:1;}
 
 /* CHARTS */
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-bottom:1.1rem;}
-.charts-grid-6{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-bottom:1.1rem;}
+.charts-grid-6{display:grid;grid-template-columns:repeat(2,minmax(520px,1fr));gap:1.1rem;margin-bottom:1.1rem;overflow-x:auto;overflow-y:hidden;padding-bottom:.3rem;-webkit-overflow-scrolling:touch;}
 .chart-full{grid-column:1/-1;}
 .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.1rem 1.3rem;}
 .chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.9rem;}
@@ -173,8 +175,16 @@ footer{background:var(--eco-navy);padding:.7rem 2.2rem;display:flex;align-items:
 .footer-note{font-size:.6rem;color:rgba(255,255,255,.38);letter-spacing:.04em;}
 .footer-brand{font-family:'Montserrat',sans-serif;font-size:.68rem;font-weight:700;color:var(--eco-light);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;text-align:right;}
 
-@media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr);}}
-@media(max-width:800px){
+@media(max-width:1200px){
+  .kpi-grid{grid-template-columns:repeat(3,1fr);}
+  .charts-grid{grid-template-columns:1fr;}
+  .charts-grid-6{grid-template-columns:minmax(560px,1fr);}
+  .chart-full{grid-column:1;}
+  .header-top,.controls-bar,main,footer{padding-left:1.4rem;padding-right:1.4rem;}
+  .header-top{flex-wrap:wrap;}
+  .header-top>div:last-child{flex:1 1 360px;}
+}
+@media(max-width:800px) and (pointer:coarse){
   .header-top,.controls-bar,main,footer{padding-left:1rem;padding-right:1rem;}
   .header-top{flex-direction:column;align-items:flex-start;gap:.8rem;}
   .header-top>div:last-child{width:100%;}
@@ -191,8 +201,9 @@ footer{background:var(--eco-navy);padding:.7rem 2.2rem;display:flex;align-items:
   #theme-toggle{font-size:.58rem;}
   .kpi-grid{grid-template-columns:1fr 1fr;}
   .charts-grid{grid-template-columns:1fr;}
-  .charts-grid-6{grid-template-columns:1fr;}
+  .charts-grid-6{grid-template-columns:1fr;overflow-x:visible;}
   .chart-full{grid-column:1;}
+  .charts-grid-6>.chart-card{min-width:0;}
   .chart-card{padding:.95rem .9rem;}
   .chart-header{margin-bottom:.65rem;}
   .chart-title{font-size:.9rem;}
@@ -720,6 +731,17 @@ const COLORS = {
   AUS:'#0284c7',KOR:'#059669',RUS:'#b45309',TUR:'#be185d',
   ZAF:'#047857',SAU:'#a16207',
 };
+const REGION_COLORS = {
+  G001:'#4c1d95',G110:'#5b21b6',G200:'#6d28d9',G505:'#7c3aed',
+  G903:'#8b5cf6',G163:'#6366f1',G998:'#4f46e5',G119:'#4338ca',
+  G205:'#9333ea',G400:'#7e22ce',GX123:'#a855f7',G603:'#581c87',
+  G510:'#312e81'
+};
+function getSeriesColor(iso){
+  const meta=ALL_COUNTRIES[iso];
+  if(meta?.region) return REGION_COLORS[iso] || '#8B5CF6';
+  return COLORS[iso] || '#368DC5';
+}
 
 // ---
 // Fuente: campo LATEST_ACTUAL_ANNUAL_DATA del WEO Oct 2025
@@ -967,7 +989,8 @@ let tableSortKey = 'gdp';
 let tableSortDir = 'desc';
 let rawData = {};
 let charts = {};
-let lastMobileView = null;
+let lastLayoutMode = '';
+let resizeTimer = null;
 const GITHUB_OWNER = 'fundacionecosur';
 const GITHUB_REPO = 'dashboard';
 const GITHUB_BRANCH = 'main';
@@ -1635,7 +1658,29 @@ function lastVal(iso,ind){
   return null;
 }
 function fmt(v,d=1){ if(v==null) return '\u2014'; return v.toFixed(d).replace('.',','); }
-function isMobileView(){ return window.matchMedia('(max-width: 800px)').matches; }
+function isMobileView(){ return window.matchMedia('(max-width: 800px) and (pointer: coarse)').matches; }
+function getLayoutMode(){
+  if(isMobileView()) return 'mobile';
+  if(window.matchMedia('(max-width: 1200px)').matches) return 'zoomed';
+  return 'desktop';
+}
+function resizeCharts(){
+  Object.values(charts).forEach(chart=>{
+    try{ chart.resize(); }catch(e){}
+  });
+}
+function handleViewportChange(){
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(()=>{
+    const mode=getLayoutMode();
+    if(mode!==lastLayoutMode){
+      lastLayoutMode=mode;
+      renderChartVars();
+    }else{
+      resizeCharts();
+    }
+  },140);
+}
 
 // RENDER
 function renderAll(){
@@ -1677,11 +1722,13 @@ function renderKPIs(){
   if(countryLabel) countryLabel.textContent=country?.name||kpiIso;
   const badgeRules={
     gdp:v=>v==null?null:v>=0?{t:'Crecimiento',c:'pos'}:{t:'Contracci\u00f3n',c:'neg'},
-    inf:v=>v==null?null:v>50?{t:'Muy alta',c:'neg'}:v>20?{t:'Alta',c:'neg'}:v>5?{t:'Moderada',c:'warn'}:{t:'Baja',c:'pos'},
-    une:v=>v==null?null:v>12?{t:'Elevado',c:'neg'}:v>8?{t:'Moderado',c:'warn'}:{t:'Normal',c:'pos'},
+    inf:()=>null,
+    une:()=>null,
     bca:v=>v==null?null:v>=0?{t:'Super\u00e1vit',c:'pos'}:{t:'D\u00e9ficit',c:'neg'},
     pri:v=>v==null?null:v>=0?{t:'Super\u00e1vit',c:'pos'}:{t:'D\u00e9ficit',c:'neg'},
-    fis:v=>v==null?null:v>=0?{t:'Super\u00e1vit',c:'pos'}:{t:'D\u00e9ficit',c:'neg'}
+    fis:v=>v==null?null:v>=0?{t:'Super\u00e1vit',c:'pos'}:{t:'D\u00e9ficit',c:'neg'},
+    exp_x:v=>v==null?null:v>=0?{t:'Aumento',c:'pos'}:{t:'Reducci\u00f3n',c:'neg'},
+    imp_x:v=>v==null?null:v>=0?{t:'Aumento',c:'pos'}:{t:'Reducci\u00f3n',c:'neg'}
   };
   grid.innerHTML='';
   chartVars.forEach((key,i)=>{
@@ -1712,7 +1759,10 @@ function getXScale(){
       font:{family:'Montserrat',size:mobile?9:10},
       autoSkip:mobile,
       maxTicksLimit:mobile?5:undefined,
-      callback:(value,index)=>skipAlternateDesktop && index%2===1 ? '' : years[index],
+      callback:(value,index)=>{
+        const year=years[value] ?? years[index];
+        return skipAlternateDesktop && Number(value)%2===1 ? '' : formatYearLabel(year);
+      },
       maxRotation:0,
       minRotation:0
     },
@@ -1757,7 +1807,7 @@ const legCfg={position:'bottom',labels:{color:'#44546A',font:{family:'Montserrat
 
 function mkDs(ind,type='line'){
   return [...active].map(iso=>{
-    const c=ALL_COUNTRIES[iso]; const col=COLORS[iso]||(iso.startsWith('G')?'#8B5CF6':'#368DC5'); const d=series(iso,ind);
+    const c=ALL_COUNTRIES[iso]; const col=getSeriesColor(iso); const d=series(iso,ind);
     if(type==='bar') return{label:c?.flag+' '+(c?.name||iso),data:d,backgroundColor:col+'cc',borderColor:col,borderWidth:1,borderRadius:2};
     return{label:c?.flag+' '+(c?.name||iso),data:d,borderColor:col,backgroundColor:col+'18',borderWidth:iso==='ARG'?2.5:1.8,pointRadius:iso==='ARG'?4:2,pointHoverRadius:6,pointBackgroundColor:col,tension:.3,fill:false,spanGaps:true};
   });
@@ -1879,14 +1929,9 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   await loadData();
   buildControls();
   renderAll();
-  lastMobileView=isMobileView();
-  window.addEventListener('resize',()=>{
-    const nowMobile=isMobileView();
-    if(nowMobile!==lastMobileView){
-      lastMobileView=nowMobile;
-      renderChartVars();
-    }
-  });
+  lastLayoutMode=getLayoutMode();
+  window.addEventListener('resize',handleViewportChange);
+  window.visualViewport?.addEventListener('resize',handleViewportChange);
 });
 </script>
 </body>
