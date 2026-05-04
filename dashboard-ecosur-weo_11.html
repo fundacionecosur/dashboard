@@ -75,7 +75,11 @@ header{background:var(--eco-navy);width:100%;}
 /* CONTROLS */
 .controls-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:.8rem 2.2rem;display:flex;align-items:flex-end;gap:2rem;flex-wrap:wrap;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(6,20,48,.06);}
 .controls-top{display:flex;align-items:flex-end;gap:2rem;flex-wrap:wrap;width:100%;}
-.controls-bottom{display:flex;align-items:flex-end;gap:2rem;flex-wrap:wrap;width:100%;padding-top:.2rem;border-top:1px solid var(--border);}
+.controls-bottom{display:flex;align-items:flex-start;gap:.75rem;flex-wrap:wrap;width:100%;padding-top:.2rem;border-top:1px solid var(--border);}
+.controls-item{display:flex;flex-direction:column;justify-content:flex-start;}
+.controls-item-period{min-width:230px;}
+.controls-item-chart-type{min-width:auto;}
+.controls-item-variables{min-width:260px;}
 .ctrl-label{font-size:.6rem;font-weight:600;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.3rem;}
 .chips-row{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;}
 .chip{font-size:.72rem;font-weight:500;padding:.22rem .6rem;border:1.5px solid var(--border);border-radius:3px;background:transparent;color:var(--text2);cursor:pointer;transition:all .13s;font-family:'Montserrat',sans-serif;}
@@ -186,14 +190,14 @@ footer{background:var(--eco-navy);padding:.7rem 2.2rem;display:flex;align-items:
 }
 @media(max-width:800px) and (pointer:coarse){
   .header-top,.controls-bar,main,footer{padding-left:1rem;padding-right:1rem;}
-  .header-top{flex-direction:column;align-items:flex-start;gap:.8rem;}
+  .header-top{flex-direction:column;align-items:flex-start;gap:.45rem;padding-top:.7rem;padding-bottom:.55rem;}
   .header-top>div:last-child{width:100%;}
   .logo-wrap{justify-content:flex-start!important;align-items:center!important;}
   .logo-wrap img{height:30px;}
   .header-top>div:last-child{text-align:left;}
   .header-title{font-size:1.14rem;text-align:left;line-height:1.05;}
   .header-sub{display:none;}
-  .status-row{padding:.25rem 1rem .55rem;justify-content:flex-start;align-items:center;}
+  .status-row{padding:.15rem 1rem .35rem;justify-content:flex-start;align-items:center;gap:.45rem;min-height:auto;}
   .status-pill{display:none;}
   .mobile-data-note{display:block;order:2;}
   .controls-note{display:none;}
@@ -211,8 +215,12 @@ footer{background:var(--eco-navy);padding:.7rem 2.2rem;display:flex;align-items:
   .chart-container{height:230px;}
   .controls-bar{gap:.45rem;}
   .controls-top{gap:.35rem;}
-  .multi-select-wrap,.multi-select-btn{min-width:100%;}
-  .controls-bottom{flex-direction:column;align-items:stretch;gap:.45rem;padding-top:.12rem;}
+  .multi-select-btn{min-width:100%;}
+  .controls-bottom{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:.45rem .75rem;padding-top:.12rem;}
+  .controls-item-period{grid-column:1;min-width:0;}
+  .controls-item-chart-type{grid-column:2;min-width:auto;justify-self:end;}
+  .controls-item-variables{grid-column:1 / -1;min-width:0;width:100%;}
+  .controls-item-variables .multi-select-btn,.controls-item-variables .multi-select-wrap{min-width:100%;}
   .ctrl-label{margin-bottom:.18rem;}
   .year-row{gap:.28rem;}
   .multi-select-panel{min-width:100%;max-width:none;}
@@ -276,7 +284,7 @@ footer{background:var(--eco-navy);padding:.7rem 2.2rem;display:flex;align-items:
     </div>
   </div>
   <div class="controls-bottom">
-    <div class="ctrl-label">Período</div>
+    <div class="ctrl-label">Periodo</div>
     <div class="year-row">
       <select id="yr-start"></select>
       <span class="sep">&rarr;</span>
@@ -287,7 +295,7 @@ footer{background:var(--eco-navy);padding:.7rem 2.2rem;display:flex;align-items:
 
 <main id="main">
   <!-- KPIs Argentina -->
-  <div class="section-head" style="align-items:center;flex-wrap:wrap;gap:.5rem;"><div class="section-title" style="flex:1 1 auto;"><span id="kpi-country-label">Argentina</span> · Indicadores clave</div><div style="display:flex;align-items:flex-end;gap:1rem;flex-shrink:0;"><div><div class="ctrl-label" style="font-size:.55rem;">País/Región</div><select id="kpi-iso-sel" style="font-family:'Montserrat',sans-serif;font-size:.68rem;border:1px solid var(--border);border-radius:3px;padding:.2rem .45rem;background:var(--surface);color:var(--text2);cursor:pointer;appearance:auto;"></select></div><div><div class="ctrl-label" style="font-size:.55rem;">Año</div><select id="kpi-yr-sel" style="font-family:'Montserrat',sans-serif;font-size:.68rem;border:1px solid var(--border);border-radius:3px;padding:.2rem .45rem;background:var(--surface);color:var(--text2);cursor:pointer;appearance:auto;"></select></div></div></div>
+  <div class="section-head" style="align-items:center;flex-wrap:wrap;gap:.5rem;"><div class="section-title" style="flex:1 1 auto;"><span id="kpi-country-label">Argentina</span> · Indicadores seleccionados</div><div style="display:flex;align-items:flex-end;gap:1rem;flex-shrink:0;"><div><div class="ctrl-label" style="font-size:.55rem;">País/Región</div><select id="kpi-iso-sel" style="font-family:'Montserrat',sans-serif;font-size:.68rem;border:1px solid var(--border);border-radius:3px;padding:.2rem .45rem;background:var(--surface);color:var(--text2);cursor:pointer;appearance:auto;"></select></div><div><div class="ctrl-label" style="font-size:.55rem;">Año</div><select id="kpi-yr-sel" style="font-family:'Montserrat',sans-serif;font-size:.68rem;border:1px solid var(--border);border-radius:3px;padding:.2rem .45rem;background:var(--surface);color:var(--text2);cursor:pointer;appearance:auto;"></select></div></div></div>
   <div class="kpi-grid">
     <div class="kpi-card k0"><div class="kpi-label">PIB Real</div><div class="kpi-number" id="kpi-gdp">&mdash;<span class="kpi-unit"> %</span></div><div class="kpi-badge" id="kpi-gdp-b"></div><div class="kpi-year" id="kpi-gdp-y"></div></div>
     <div class="kpi-card k1"><div class="kpi-label">Inflaci?n (IPC-FP)</div><div class="kpi-number" id="kpi-inf">?<span class="kpi-unit"> %</span></div><div class="kpi-badge" id="kpi-inf-b"></div><div class="kpi-year" id="kpi-inf-y"></div></div>
@@ -301,6 +309,11 @@ footer{background:var(--eco-navy);padding:.7rem 2.2rem;display:flex;align-items:
   <div class="section-head" style="align-items:center;flex-wrap:wrap;gap:.5rem;">
     <div class="section-title" style="flex:1 1 auto;">Evolución Comparativa</div>
     <div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0;">
+      <span style="font-size:.6rem;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;">Tipo de gráfico</span>
+      <div style="display:flex;align-items:center;gap:.25rem;padding:.18rem;background:transparent;border:none;border-radius:4px;">
+        <button id="chart-type-line" type="button" style="font-family:'Montserrat',sans-serif;font-size:.66rem;border:1px solid transparent;border-radius:3px;padding:.22rem .6rem;background:var(--eco-blue);color:#fff;cursor:pointer;font-weight:600;">Líneas</button>
+        <button id="chart-type-bar" type="button" style="font-family:'Montserrat',sans-serif;font-size:.66rem;border:1px solid transparent;border-radius:3px;padding:.22rem .6rem;background:transparent;color:var(--text2);cursor:pointer;font-weight:600;">Barras</button>
+      </div>
       <span style="font-size:.6rem;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;">Variables</span>
       <button id="var-selector-btn" style="font-family:'Montserrat',sans-serif;font-size:.68rem;border:1px solid var(--border);border-radius:3px;padding:.2rem .7rem;background:var(--surface);color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:.35rem;">
         <span id="var-selector-label">6 variables seleccionadas</span>
@@ -360,7 +373,7 @@ footer{background:var(--eco-navy);padding:.7rem 2.2rem;display:flex;align-items:
     <div class="table-scroll">
       <table>
         <thead id="table-head"><tr>
-          <th>País</th><th>PIB Real %</th><th>Inflación fin de período %</th><th>Desempleo %</th><th>Cta. Cte. % PIB</th><th>Fiscal Pri. % PIB</th><th>Fiscal Total % PIB</th><th>PIB p/c USD</th>
+          <th>País</th><th>PIB Real %</th><th>Inflación fin de periodo %</th><th>Desempleo %</th><th>Cta. Cte. % PIB</th><th>Fiscal Pri. % PIB</th><th>Fiscal Total % PIB</th><th>PIB p/c USD</th>
         </tr></thead>
         <tbody id="table-body"></tbody>
       </table>
@@ -742,6 +755,15 @@ function getSeriesColor(iso){
   if(meta?.region) return REGION_COLORS[iso] || '#8B5CF6';
   return COLORS[iso] || '#368DC5';
 }
+function getIsoPrefix(iso){
+  return String(iso||'').slice(0,2).toUpperCase();
+}
+function getEntityLabel(iso,{includeName=true}={}){
+  const meta=ALL_COUNTRIES[iso];
+  if(!meta) return includeName ? iso : getIsoPrefix(iso);
+  if(meta.region) return includeName ? `${meta.flag} ${meta.name}` : meta.flag;
+  return includeName ? meta.name : '';
+}
 
 // ---
 // Fuente: campo LATEST_ACTUAL_ANNUAL_DATA del WEO Oct 2025
@@ -958,8 +980,8 @@ const indMap = {
 // ---
 const VAR_CATALOG = {
   gdp:     {label:'PIB Real',                          unit:'%',     fmt:'pct',   chart:'line_zero', desc:'Variación % anual · Precios constantes'},
-  inf:     {label:'Inflación (fin de período)',         unit:'%',     fmt:'pct',   chart:'log',       desc:'IPC · Var. % · fin de período · escala log'},
-  infavg:  {label:'Inflación (prom. anual)',            unit:'%',     fmt:'pct',   chart:'line',      desc:'IPC · Var. % · promedio del período'},
+  inf:     {label:'Inflación (fin de periodo)',         unit:'%',     fmt:'pct',   chart:'line',      desc:'IPC · Var. % · fin de periodo'},
+  infavg:  {label:'Inflación (prom. anual)',            unit:'%',     fmt:'pct',   chart:'line',      desc:'IPC · Var. % · promedio del periodo'},
   une:     {label:'Desempleo',                         unit:'%',     fmt:'pct',   chart:'bar',       desc:'% de la población activa'},
   bca:     {label:'Cuenta Corriente',                  unit:'% PIB', fmt:'pct',   chart:'line_zero', desc:'% del PIB'},
   pri:     {label:'Resultado Fiscal Primario',         unit:'% PIB', fmt:'pct',   chart:'line_zero', desc:'Gobierno Central · % PIB'},
@@ -967,9 +989,9 @@ const VAR_CATALOG = {
   gdpusd:  {label:'PIB (millones de USD)',             unit:'USD',   fmt:'usd',   chart:'line',      desc:'PIB corriente · millones de dólares'},
   gdppc:   {label:'PIB Per Cápita (USD)',              unit:'USD',   fmt:'usdpc', chart:'line',      desc:'PIB per cápita · USD corriente'},
   gdpppp:  {label:'PIB Per Cápita (PPP)',              unit:'USD',   fmt:'usdpc', chart:'line',      desc:'PIB per cápita · PPP · dólares internacionales · ICP 2021'},
-  rev:     {label:'Ingresos Totales',                  unit:'% PIB', fmt:'pct',   chart:'line',      desc:'Ingresos del Gobierno General · % del PIB'},
-  exp:     {label:'Gastos Totales',                    unit:'% PIB', fmt:'pct',   chart:'line',      desc:'Gastos del Gobierno General · % del PIB'},
-  debt:    {label:'Deuda Bruta',                       unit:'% PIB', fmt:'pct',   chart:'line',      desc:'Deuda bruta · Gobierno General · % del PIB'},
+  rev:     {label:'Ingresos Públicos Totales',         unit:'% PIB', fmt:'pct',   chart:'line',      desc:'Ingresos del Gobierno General · % del PIB'},
+  exp:     {label:'Gastos Públicos Totales',           unit:'% PIB', fmt:'pct',   chart:'line',      desc:'Gastos del Gobierno General · % del PIB'},
+  debt:    {label:'Deuda Pública',                     unit:'% PIB', fmt:'pct',   chart:'line',      desc:'Deuda bruta · Gobierno General · % del PIB'},
   exp_x:   {label:'Exportaciones de bienes y servicios', unit:'%',   fmt:'pct',   chart:'line_zero', desc:'Volumen exportaciones · FOB · Var. % anual'},
   imp_x:   {label:'Importaciones de bienes y servicios', unit:'%',   fmt:'pct',   chart:'line_zero', desc:'Volumen importaciones · CIF · Var. % anual'},
   gfcf:    {label:'Formación bruta de capital',        unit:'% PIB', fmt:'pct',   chart:'line',      desc:'Formación bruta de capital · % del PIB'},
@@ -989,6 +1011,7 @@ let tableSortKey = 'gdp';
 let tableSortDir = 'desc';
 let rawData = {};
 let charts = {};
+let chartMode = 'line';
 let lastLayoutMode = '';
 let resizeTimer = null;
 const GITHUB_OWNER = 'fundacionecosur';
@@ -1376,6 +1399,8 @@ function setupControlLayout(){
   const ye=document.getElementById('yr-end');
   const varBtn=document.getElementById('var-selector-btn');
   const varPanel=document.getElementById('var-panel');
+  const chartTypeLine=document.getElementById('chart-type-line');
+  const chartTypeBar=document.getElementById('chart-type-bar');
   const note=controlsBar?.querySelector('.controls-note') || [...(controlsBar?.children||[])].find(el=>el!==controlsBar?.querySelector('.controls-top') && el!==controlsBar?.querySelector('.controls-bottom') && !el.classList?.contains('section-head'));
   if(!controlsBar || !chipsRow || !ys || !ye) return;
 
@@ -1401,9 +1426,10 @@ function setupControlLayout(){
   countriesWrap.appendChild(chipsRow);
 
   const periodWrap=document.createElement('div');
+  periodWrap.className='controls-item controls-item-period';
   const periodLabel=document.createElement('div');
   periodLabel.className='ctrl-label';
-  periodLabel.textContent='Per\u00edodo';
+  periodLabel.textContent='Periodo';
   const yearRow=document.createElement('div');
   yearRow.className='year-row';
   yearRow.appendChild(ys);
@@ -1421,10 +1447,25 @@ function setupControlLayout(){
   bottom.innerHTML='';
   bottom.appendChild(periodWrap);
 
+  if(chartTypeLine && chartTypeBar){
+    const chartModeWrap=document.createElement('div');
+    chartModeWrap.className='controls-item controls-item-chart-type';
+    const chartModeLabel=document.createElement('div');
+    chartModeLabel.className='ctrl-label';
+    chartModeLabel.textContent='Tipo de gráfico';
+    const chartModeGroup=document.createElement('div');
+    chartModeGroup.style.cssText='display:flex;align-items:center;gap:.25rem;padding:.18rem;background:transparent;border:none;border-radius:4px;';
+    chartModeGroup.appendChild(chartTypeLine);
+    chartModeGroup.appendChild(chartTypeBar);
+    chartModeWrap.appendChild(chartModeLabel);
+    chartModeWrap.appendChild(chartModeGroup);
+    bottom.appendChild(chartModeWrap);
+  }
+
   if(varBtn && varPanel){
     const chartToolbar=varBtn.parentElement;
     const varWrap=document.createElement('div');
-    varWrap.className='multi-select-wrap';
+    varWrap.className='controls-item controls-item-variables multi-select-wrap';
     const varLabel=document.createElement('div');
     varLabel.className='ctrl-label';
     varLabel.textContent='Variables';
@@ -1435,9 +1476,7 @@ function setupControlLayout(){
     varWrap.appendChild(varBtn);
     varWrap.appendChild(varPanel);
     bottom.appendChild(varWrap);
-    if(chartToolbar && chartToolbar.children.length===0){
-      chartToolbar.remove();
-    } else if(chartToolbar && chartToolbar !== varWrap){
+    if(chartToolbar && chartToolbar !== varWrap){
       chartToolbar.remove();
     }
   }
@@ -1463,7 +1502,7 @@ function buildControls(){
     const cntEntries=allEntries.filter(([,c])=>!c.region).sort((a,b)=>a[1].name.localeCompare(b[1].name,'es'));
     for(const [iso,c] of [...regEntries,...cntEntries]){
       const o=document.createElement('option');
-      o.value=iso; o.textContent=(c.region?'':'')+c.name;
+      o.value=iso; o.textContent=getEntityLabel(iso);
       if(iso===kpiIso) o.selected=true;
       kiSel.appendChild(o);
     }
@@ -1505,6 +1544,8 @@ function buildControls(){
   const varBoxes    = document.getElementById('var-checkboxes');
   const varLabel    = document.getElementById('var-selector-label');
   const varBadge    = document.getElementById('var-count-badge');
+  const chartTypeLine = document.getElementById('chart-type-line');
+  const chartTypeBar  = document.getElementById('chart-type-bar');
 
   function buildVarCheckboxes(){
     varBoxes.innerHTML = '';
@@ -1578,6 +1619,20 @@ function buildControls(){
   if(varCancel){
     varCancel.addEventListener('click', ()=>{ varPanel.classList.remove('open'); });
   }
+  if(chartTypeLine){
+    chartTypeLine.addEventListener('click', ()=>{
+      if(chartMode==='line') return;
+      chartMode='line';
+      renderAll();
+    });
+  }
+  if(chartTypeBar){
+    chartTypeBar.addEventListener('click', ()=>{
+      if(chartMode==='bar') return;
+      chartMode='bar';
+      renderAll();
+    });
+  }
   buildChips();
 }
 
@@ -1587,7 +1642,7 @@ function buildChips(){
     const c=ALL_COUNTRIES[iso]; if(!c) return;
     const el=document.createElement('button');
     el.className='chip active'; el.dataset.iso=iso;
-    if(c.region){el.textContent=c.flag+' '+c.name;}else{const ISO2_MAP={"ARG": "AR", "BRA": "BR", "CHL": "CL", "COL": "CO", "MEX": "MX", "PER": "PE", "URY": "UY", "BOL": "BO", "PRY": "PY", "ECU": "EC", "VEN": "VE", "CRI": "CR", "PAN": "PA", "GTM": "GT", "DOM": "DO", "HTI": "HT", "HND": "HN", "NIC": "NI", "SLV": "SV", "JAM": "JM", "TTO": "TT", "GUY": "GY", "SUR": "SR", "CUB": "CU", "BLZ": "BZ", "ATG": "AG", "BRB": "BB", "DMA": "DM", "GRD": "GD", "KNA": "KN", "LCA": "LC", "VCT": "VC", "USA": "US", "CAN": "CA", "DEU": "DE", "FRA": "FR", "ITA": "IT", "ESP": "ES", "GBR": "GB", "NLD": "NL", "BEL": "BE", "CHE": "CH", "AUT": "AT", "SWE": "SE", "NOR": "NO", "DNK": "DK", "FIN": "FI", "PRT": "PT", "GRC": "GR", "POL": "PL", "CZE": "CZ", "HUN": "HU", "ROU": "RO", "SVK": "SK", "SVN": "SI", "HRV": "HR", "BGR": "BG", "EST": "EE", "LVA": "LV", "LTU": "LT", "IRL": "IE", "LUX": "LU", "CYP": "CY", "MLT": "MT", "ISL": "IS", "UKR": "UA", "RUS": "RU", "TUR": "TR", "SRB": "RS", "ALB": "AL", "MDA": "MD", "BLR": "BY", "MKD": "MK", "BIH": "BA", "MNE": "ME", "KOS": "XK", "GEO": "GE", "ARM": "AM", "AZE": "AZ", "LIE": "LI", "SMR": "SM", "AND": "AD", "MCO": "MC", "CHN": "CN", "JPN": "JP", "KOR": "KR", "IND": "IN", "IDN": "ID", "THA": "TH", "VNM": "VN", "MYS": "MY", "PHL": "PH", "SGP": "SG", "TWN": "TW", "HKG": "HK", "MAC": "MO", "BGD": "BD", "PAK": "PK", "LKA": "LK", "NPL": "NP", "MMR": "MM", "KHM": "KH", "LAO": "LA", "BRN": "BN", "TLS": "TL", "MNG": "MN", "AUS": "AU", "NZL": "NZ", "FJI": "FJ", "PNG": "PG", "WSM": "WS", "TON": "TO", "VUT": "VU", "SLB": "SB", "KIR": "KI", "MHL": "MH", "FSM": "FM", "NRU": "NR", "PLW": "PW", "TUV": "TV", "SAU": "SA", "ARE": "AE", "QAT": "QA", "KWT": "KW", "IRN": "IR", "IRQ": "IQ", "EGY": "EG", "ISR": "IL", "JOR": "JO", "LBN": "LB", "MAR": "MA", "TUN": "TN", "DZA": "DZ", "LBY": "LY", "SDN": "SD", "OMN": "OM", "BHR": "BH", "YEM": "YE", "SYR": "SY", "WBG": "PS", "NGA": "NG", "ZAF": "ZA", "ETH": "ET", "KEN": "KE", "GHA": "GH", "TZA": "TZ", "AGO": "AO", "CMR": "CM", "CIV": "CI", "SEN": "SN", "UGA": "UG", "ZMB": "ZM", "MOZ": "MZ", "MDG": "MG", "ZWE": "ZW", "RWA": "RW", "MWI": "MW", "MLI": "ML", "BFA": "BF", "GIN": "GN", "NER": "NE", "TCD": "TD", "SSD": "SS", "SOM": "SO", "ERI": "ER", "DJI": "DJ", "BDI": "BI", "LSO": "LS", "SWZ": "SZ", "NAM": "NA", "BWA": "BW", "GAB": "GA", "COG": "CG", "COD": "CD", "GNQ": "GQ", "GNB": "GW", "SLE": "SL", "LBR": "LR", "TGO": "TG", "BEN": "BJ", "CPV": "CV", "STP": "ST", "GMB": "GM", "COM": "KM", "SYC": "SC", "MUS": "MU", "KAZ": "KZ", "UZB": "UZ", "TKM": "TM", "KGZ": "KG", "TJK": "TJ", "AFG": "AF", "MDV": "MV", "BTN": "BT", "ABW": "AW", "PRI": "PR"};const code2=ISO2_MAP[iso]||iso.slice(0,2).toUpperCase();el.innerHTML='<span style="font-size:.6rem;font-weight:700;opacity:.75;margin-right:.18rem;">'+code2+'</span>'+c.name;}el.title=c.name+' · clic para quitar';
+    el.textContent=getEntityLabel(iso); el.title=c.name+' · clic para quitar';
     el.onclick=()=>{ if(active.size>1){active.delete(iso);buildChips();renderAll();} };
     row.appendChild(el);
   });
@@ -1615,7 +1670,7 @@ function fillDdList(list,si){
   const makeItem=(iso,c)=>{
     const item=document.createElement('div');
     item.className='dropdown-item'+(active.has(iso)?' selected':'');
-    item.innerHTML='<span class="chk">'+(active.has(iso)?'\u2713':'')+' </span><span>'+c.flag+'</span><span>'+c.name+'</span>';
+    item.innerHTML='<span class="chk">'+(active.has(iso)?'\u2713':'')+' </span><span>'+getEntityLabel(iso)+'</span>';
     item.querySelector('.chk').textContent=active.has(iso)?'\u2713':'';
     item.onclick=e=>{ e.stopPropagation();
       if(active.has(iso)){if(active.size>1)active.delete(iso);}else active.add(iso);
@@ -1684,6 +1739,7 @@ function handleViewportChange(){
 
 // RENDER
 function renderAll(){
+  setChartModeButtons();
   renderKPIs();
   renderChartVars();
   renderTable();
@@ -1698,7 +1754,9 @@ function renderChartVars(){
     const descEl  = document.getElementById('cd-v'+i);
     if(titleEl) titleEl.textContent = meta.label;
     if(descEl)  descEl.textContent  = meta.desc;
-    if(meta.chart === 'log'){
+    if(chartMode==='bar'){
+      makeBarChart(canvasId, varKey);
+    } else if(meta.chart === 'log'){
       makeLogChart(canvasId, varKey);
     } else if(meta.chart === 'bar'){
       makeBarChart(canvasId, varKey);
@@ -1804,12 +1862,22 @@ function getYAxisScale(ind,{zero=false}={}){
 }
 const ttCfg={backgroundColor:'#fff',borderColor:'#d4e2ed',borderWidth:1,titleColor:'#061430',bodyColor:'#44546A',titleFont:{family:'Montserrat',size:12,weight:'bold'},bodyFont:{family:'Montserrat',size:11},padding:10};
 const legCfg={position:'bottom',labels:{color:'#44546A',font:{family:'Montserrat',size:10},boxWidth:10,padding:10}};
+function setChartModeButtons(){
+  const lineBtn=document.getElementById('chart-type-line');
+  const barBtn=document.getElementById('chart-type-bar');
+  if(!lineBtn || !barBtn) return;
+  const activeStyle={background:'var(--eco-blue)',color:'#fff',borderColor:'transparent'};
+  const inactiveStyle={background:'transparent',color:'var(--text2)',borderColor:'transparent'};
+  Object.assign(lineBtn.style, chartMode==='line' ? activeStyle : inactiveStyle);
+  Object.assign(barBtn.style, chartMode==='bar' ? activeStyle : inactiveStyle);
+}
 
 function mkDs(ind,type='line'){
   return [...active].map(iso=>{
     const c=ALL_COUNTRIES[iso]; const col=getSeriesColor(iso); const d=series(iso,ind);
-    if(type==='bar') return{label:c?.flag+' '+(c?.name||iso),data:d,backgroundColor:col+'cc',borderColor:col,borderWidth:1,borderRadius:2};
-    return{label:c?.flag+' '+(c?.name||iso),data:d,borderColor:col,backgroundColor:col+'18',borderWidth:iso==='ARG'?2.5:1.8,pointRadius:iso==='ARG'?4:2,pointHoverRadius:6,pointBackgroundColor:col,tension:.3,fill:false,spanGaps:true};
+    const label=getEntityLabel(iso);
+    if(type==='bar') return{label,data:d,backgroundColor:col+'cc',borderColor:col,borderWidth:1,borderRadius:2};
+    return{label,data:d,borderColor:col,backgroundColor:col+'18',borderWidth:iso==='ARG'?2.5:1.8,pointRadius:iso==='ARG'?4:2,pointHoverRadius:6,pointBackgroundColor:col,tension:.3,fill:false,spanGaps:true};
   });
 }
 
@@ -1916,7 +1984,7 @@ function renderTable(){
       }
       return `<td class="${cls}">${fmtValue(ind,value)}</td>`;
     }).join('');
-    tr.innerHTML='<td><div class="flag-cell"><span>'+c.flag+'</span>'+c.name+'</div></td>'+cells;
+    tr.innerHTML='<td><div class="flag-cell"><span>'+getEntityLabel(row.iso)+'</span></div></td>'+cells;
     tbody.appendChild(tr);
   }
 }
