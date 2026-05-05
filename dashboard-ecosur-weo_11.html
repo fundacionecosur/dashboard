@@ -191,14 +191,14 @@ footer{background:var(--eco-navy);padding:.7rem 2.2rem;display:flex;align-items:
 }
 @media(max-width:800px) and (pointer:coarse){
   .header-top,.controls-bar,main,footer{padding-left:1rem;padding-right:1rem;}
-  .header-top{flex-direction:column;align-items:flex-start;gap:.45rem;padding-top:.7rem;padding-bottom:.55rem;}
+  .header-top{flex-direction:column;align-items:flex-start;gap:.45rem;padding-top:.7rem;padding-bottom:.55rem;border-bottom:0;}
   .header-top>div:last-child{width:100%;}
   .logo-wrap{justify-content:flex-start!important;align-items:center!important;}
   .logo-wrap img{height:30px;}
   .header-top>div:last-child{text-align:left;}
   .header-title{font-size:1.14rem;text-align:left;line-height:1.05;}
   .header-sub{display:none;}
-  .status-row{padding:.15rem 1rem .35rem;justify-content:flex-start;align-items:center;gap:.45rem;min-height:auto;}
+  .status-row{display:none;}
   .status-pill{display:none;}
   .mobile-data-note{display:block;order:2;}
   .controls-note{display:none;}
@@ -218,16 +218,17 @@ footer{background:var(--eco-navy);padding:.7rem 2.2rem;display:flex;align-items:
   .controls-top{gap:.35rem;}
   .multi-select-btn{min-width:100%;}
   .controls-bottom{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:.45rem .75rem;padding-top:.12rem;}
-  .controls-item-period{grid-column:1;min-width:0;}
-  .controls-item-chart-type{grid-column:2;min-width:auto;justify-self:end;}
-  .controls-item-highlight{grid-column:1 / -1;min-width:0;width:100%;}
-  .controls-item-variables{grid-column:1 / -1;min-width:0;width:100%;}
-  .controls-item-highlight .multi-select-btn,.controls-item-highlight .multi-select-wrap{min-width:100%;}
+  .controls-item-period{grid-column:1 / -1;grid-row:1;min-width:0;}
+  .controls-item-highlight{grid-column:1;grid-row:2;min-width:0;width:auto;}
+  .controls-item-chart-type{grid-column:2;grid-row:2;min-width:auto;justify-self:end;}
+  .controls-item-variables{grid-column:1 / -1;grid-row:3;min-width:0;width:100%;}
+  .controls-item-highlight .multi-select-btn,.controls-item-highlight.multi-select-wrap{min-width:0;width:100%;}
   .controls-item-variables .multi-select-btn,.controls-item-variables .multi-select-wrap{min-width:100%;}
   .ctrl-label{margin-bottom:.18rem;}
   .year-row{gap:.28rem;}
   .multi-select-panel{min-width:100%;max-width:none;}
-  .table-header{align-items:flex-start;gap:.75rem;flex-direction:column;}
+  .table-header{align-items:center;gap:.5rem;flex-direction:row;}
+  .table-header .chart-title{font-size:.86rem;}
   .table-scroll table{min-width:760px;}
   .table-scroll thead th:first-child,
   .table-scroll tbody td:first-child{
@@ -381,8 +382,8 @@ footer{background:var(--eco-navy);padding:.7rem 2.2rem;display:flex;align-items:
   <div class="section-head"><div class="section-title">Comparativa Regional</div></div>
   <div class="table-card">
     <div class="table-header">
-      <div><div class="chart-title">Resumen por País</div></div>
-      <div style="display:flex;align-items:flex-end;gap:.5rem;"><div><div class="ctrl-label" style="font-size:.55rem;">Año</div><select id="table-yr-sel" style="font-family:'Montserrat',sans-serif;font-size:.68rem;border:1px solid var(--border);border-radius:3px;padding:.2rem .45rem;background:var(--surface);color:var(--text2);cursor:pointer;"></select></div></div>
+      <div><div class="chart-title">Resumen por país</div></div>
+      <div style="display:flex;align-items:flex-end;gap:.5rem;"><div><div class="ctrl-label" style="font-size:.55rem;">Año</div><select id="table-yr-sel" style="font-family:'Montserrat',sans-serif;font-size:.68rem;border:1px solid var(--border);border-radius:3px;padding:.2rem .45rem;background:var(--surface);color:var(--text2);cursor:pointer;appearance:auto;"></select></div></div>
     </div>
     <div class="table-scroll">
       <table>
