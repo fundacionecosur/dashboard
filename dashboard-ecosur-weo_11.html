@@ -77,9 +77,10 @@ header{background:var(--eco-navy);width:100%;}
 .controls-top{display:flex;align-items:flex-end;gap:2rem;flex-wrap:wrap;width:100%;}
 .controls-bottom{display:flex;align-items:flex-start;gap:.75rem;flex-wrap:wrap;width:100%;padding-top:.2rem;border-top:1px solid var(--border);}
 .controls-item{display:flex;flex-direction:column;justify-content:flex-start;}
-.controls-item-period{min-width:230px;}
+.controls-item-period{min-width:200px;}
 .controls-item-chart-type{min-width:auto;}
-.controls-item-variables{min-width:260px;}
+.controls-item-highlight{min-width:220px;}
+.controls-item-variables{min-width:220px;}
 .ctrl-label{font-size:.6rem;font-weight:600;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.3rem;}
 .chips-row{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;}
 .chip{font-size:.72rem;font-weight:500;padding:.22rem .6rem;border:1.5px solid var(--border);border-radius:3px;background:transparent;color:var(--text2);cursor:pointer;transition:all .13s;font-family:'Montserrat',sans-serif;}
@@ -90,8 +91,8 @@ header{background:var(--eco-navy);width:100%;}
 .dropdown-wrap{position:relative;display:inline-block;}
 .country-dropdown{display:none;position:absolute;top:calc(100% + 5px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:4px;box-shadow:0 6px 20px rgba(6,20,48,.14);z-index:300;min-width:190px;max-height:270px;overflow-y:auto;}
 .country-dropdown.open{display:block;}
-.multi-select-wrap{position:relative;min-width:260px;}
-.multi-select-btn{font-family:'Montserrat',sans-serif;font-size:.72rem;border:1.5px solid var(--border);border-radius:3px;padding:.34rem .8rem;background:var(--surface);color:var(--text2);cursor:pointer;min-width:260px;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:.6rem;}
+.multi-select-wrap{position:relative;min-width:220px;}
+.multi-select-btn{font-family:'Montserrat',sans-serif;font-size:.72rem;border:1.5px solid var(--border);border-radius:3px;padding:.34rem .8rem;background:var(--surface);color:var(--text2);cursor:pointer;min-width:220px;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:.6rem;}
 .multi-select-panel{display:none;position:absolute;top:calc(100% + 5px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:4px;box-shadow:0 6px 20px rgba(6,20,48,.14);z-index:320;min-width:320px;max-width:360px;padding:1rem 1.1rem;}
 .multi-select-panel.open{display:block;}
 .dropdown-search{width:100%;padding:.45rem .75rem;border:none;border-bottom:1px solid var(--border);font-family:'Montserrat',sans-serif;font-size:.75rem;outline:none;background:var(--surface2);color:var(--text);}
@@ -219,7 +220,9 @@ footer{background:var(--eco-navy);padding:.7rem 2.2rem;display:flex;align-items:
   .controls-bottom{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:.45rem .75rem;padding-top:.12rem;}
   .controls-item-period{grid-column:1;min-width:0;}
   .controls-item-chart-type{grid-column:2;min-width:auto;justify-self:end;}
+  .controls-item-highlight{grid-column:1 / -1;min-width:0;width:100%;}
   .controls-item-variables{grid-column:1 / -1;min-width:0;width:100%;}
+  .controls-item-highlight .multi-select-btn,.controls-item-highlight .multi-select-wrap{min-width:100%;}
   .controls-item-variables .multi-select-btn,.controls-item-variables .multi-select-wrap{min-width:100%;}
   .ctrl-label{margin-bottom:.18rem;}
   .year-row{gap:.28rem;}
@@ -314,6 +317,11 @@ footer{background:var(--eco-navy);padding:.7rem 2.2rem;display:flex;align-items:
         <button id="chart-type-line" type="button" style="font-family:'Montserrat',sans-serif;font-size:.66rem;border:1px solid transparent;border-radius:3px;padding:.22rem .6rem;background:var(--eco-blue);color:#fff;cursor:pointer;font-weight:600;">Líneas</button>
         <button id="chart-type-bar" type="button" style="font-family:'Montserrat',sans-serif;font-size:.66rem;border:1px solid transparent;border-radius:3px;padding:.22rem .6rem;background:transparent;color:var(--text2);cursor:pointer;font-weight:600;">Barras</button>
       </div>
+      <span style="font-size:.6rem;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;">País resaltado</span>
+      <button id="highlight-selector-btn" style="font-family:'Montserrat',sans-serif;font-size:.68rem;border:1px solid var(--border);border-radius:3px;padding:.2rem .7rem;background:var(--surface);color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:.35rem;">
+        <span id="highlight-selector-label">Ninguno</span>
+        <span style="font-size:.6rem;opacity:.6;">&#9662;</span>
+      </button>
       <span style="font-size:.6rem;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;">Variables</span>
       <button id="var-selector-btn" style="font-family:'Montserrat',sans-serif;font-size:.68rem;border:1px solid var(--border);border-radius:3px;padding:.2rem .7rem;background:var(--surface);color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:.35rem;">
         <span id="var-selector-label">6 variables seleccionadas</span>
@@ -333,6 +341,12 @@ footer{background:var(--eco-navy);padding:.7rem 2.2rem;display:flex;align-items:
       <button id="var-apply-btn" style="font-family:'Montserrat',sans-serif;font-size:.68rem;background:var(--eco-blue);color:#fff;border:none;border-radius:3px;padding:.3rem .9rem;cursor:pointer;font-weight:600;">Aplicar</button>
       <button id="var-cancel-btn" style="font-family:'Montserrat',sans-serif;font-size:.68rem;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:3px;padding:.3rem .9rem;cursor:pointer;">Cancelar</button>
     </div>
+  </div>
+  <div id="highlight-panel" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1rem 1.2rem;margin-bottom:1rem;">
+    <div style="font-size:.6rem;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.7rem;">
+      Elegir un país activo para resaltar en los gráficos
+    </div>
+    <div id="highlight-options" style="display:grid;grid-template-columns:1fr;gap:.45rem;"></div>
   </div>
 
   <!-- 3x2 chart grid -->
@@ -736,9 +750,9 @@ Object.entries(COUNTRY_NAME_OVERRIDES).forEach(([iso,name])=>{
 });
 const DEFAULT_ACTIVE = ['ARG','BRA','CHL','MEX','USA','DEU','CHN'];
 const COLORS = {
-  ARG:'#368DC5',BRA:'#061430',CHL:'#e05a3a',COL:'#409DAF',
+  ARG:'#368DC5',BRA:'#c89f00',CHL:'#e05a3a',COL:'#409DAF',
   MEX:'#1a6b3c',PER:'#8B5CF6',URY:'#5b8fa8',BOL:'#d97706',
-  PRY:'#9b2335',ECU:'#0891b2',USA:'#44546A',DEU:'#c89f00',
+  PRY:'#9b2335',ECU:'#0891b2',USA:'#44546A',DEU:'#061430',
   CHN:'#c0392b',IND:'#ff6b35',JPN:'#6d28d9',GBR:'#0369a1',
   FRA:'#065f46',ITA:'#92400e',ESP:'#b91c1c',CAN:'#7c3aed',
   AUS:'#0284c7',KOR:'#059669',RUS:'#b45309',TUR:'#be185d',
@@ -754,6 +768,12 @@ function getSeriesColor(iso){
   const meta=ALL_COUNTRIES[iso];
   if(meta?.region) return REGION_COLORS[iso] || '#8B5CF6';
   return COLORS[iso] || '#368DC5';
+}
+function withAlpha(hex, alpha){
+  if(typeof hex!=='string' || !hex.startsWith('#')) return hex;
+  if(hex.length===7) return hex + alpha;
+  if(hex.length===9) return hex.slice(0,7) + alpha;
+  return hex;
 }
 function getIsoPrefix(iso){
   return String(iso||'').slice(0,2).toUpperCase();
@@ -1012,6 +1032,7 @@ let tableSortDir = 'desc';
 let rawData = {};
 let charts = {};
 let chartMode = 'line';
+let highlightedIso = null;
 let lastLayoutMode = '';
 let resizeTimer = null;
 const GITHUB_OWNER = 'fundacionecosur';
@@ -1399,6 +1420,8 @@ function setupControlLayout(){
   const ye=document.getElementById('yr-end');
   const varBtn=document.getElementById('var-selector-btn');
   const varPanel=document.getElementById('var-panel');
+  const highlightBtn=document.getElementById('highlight-selector-btn');
+  const highlightPanel=document.getElementById('highlight-panel');
   const chartTypeLine=document.getElementById('chart-type-line');
   const chartTypeBar=document.getElementById('chart-type-bar');
   const note=controlsBar?.querySelector('.controls-note') || [...(controlsBar?.children||[])].find(el=>el!==controlsBar?.querySelector('.controls-top') && el!==controlsBar?.querySelector('.controls-bottom') && !el.classList?.contains('section-head'));
@@ -1447,21 +1470,6 @@ function setupControlLayout(){
   bottom.innerHTML='';
   bottom.appendChild(periodWrap);
 
-  if(chartTypeLine && chartTypeBar){
-    const chartModeWrap=document.createElement('div');
-    chartModeWrap.className='controls-item controls-item-chart-type';
-    const chartModeLabel=document.createElement('div');
-    chartModeLabel.className='ctrl-label';
-    chartModeLabel.textContent='Tipo de gráfico';
-    const chartModeGroup=document.createElement('div');
-    chartModeGroup.style.cssText='display:flex;align-items:center;gap:.25rem;padding:.18rem;background:transparent;border:none;border-radius:4px;';
-    chartModeGroup.appendChild(chartTypeLine);
-    chartModeGroup.appendChild(chartTypeBar);
-    chartModeWrap.appendChild(chartModeLabel);
-    chartModeWrap.appendChild(chartModeGroup);
-    bottom.appendChild(chartModeWrap);
-  }
-
   if(varBtn && varPanel){
     const chartToolbar=varBtn.parentElement;
     const varWrap=document.createElement('div');
@@ -1479,6 +1487,36 @@ function setupControlLayout(){
     if(chartToolbar && chartToolbar !== varWrap){
       chartToolbar.remove();
     }
+  }
+
+  if(chartTypeLine && chartTypeBar){
+    const chartModeWrap=document.createElement('div');
+    chartModeWrap.className='controls-item controls-item-chart-type';
+    const chartModeLabel=document.createElement('div');
+    chartModeLabel.className='ctrl-label';
+    chartModeLabel.textContent='Tipo de gráfico';
+    const chartModeGroup=document.createElement('div');
+    chartModeGroup.style.cssText='display:flex;align-items:center;gap:.25rem;padding:.18rem;background:transparent;border:none;border-radius:4px;';
+    chartModeGroup.appendChild(chartTypeLine);
+    chartModeGroup.appendChild(chartTypeBar);
+    chartModeWrap.appendChild(chartModeLabel);
+    chartModeWrap.appendChild(chartModeGroup);
+    bottom.appendChild(chartModeWrap);
+  }
+
+  if(highlightBtn && highlightPanel){
+    const highlightWrap=document.createElement('div');
+    highlightWrap.className='controls-item controls-item-highlight multi-select-wrap';
+    const highlightLabel=document.createElement('div');
+    highlightLabel.className='ctrl-label';
+    highlightLabel.textContent='País resaltado';
+    highlightBtn.className='multi-select-btn';
+    highlightPanel.className='multi-select-panel';
+    highlightPanel.style.display='';
+    highlightWrap.appendChild(highlightLabel);
+    highlightWrap.appendChild(highlightBtn);
+    highlightWrap.appendChild(highlightPanel);
+    bottom.appendChild(highlightWrap);
   }
 
   if(note) bottom.appendChild(note);
@@ -1544,6 +1582,10 @@ function buildControls(){
   const varBoxes    = document.getElementById('var-checkboxes');
   const varLabel    = document.getElementById('var-selector-label');
   const varBadge    = document.getElementById('var-count-badge');
+  const highlightBtn = document.getElementById('highlight-selector-btn');
+  const highlightPanel = document.getElementById('highlight-panel');
+  const highlightOptions = document.getElementById('highlight-options');
+  const highlightLabel = document.getElementById('highlight-selector-label');
   const chartTypeLine = document.getElementById('chart-type-line');
   const chartTypeBar  = document.getElementById('chart-type-bar');
 
@@ -1598,6 +1640,45 @@ function buildControls(){
     refreshSelectionState();
   }
 
+  function refreshHighlightLabel(){
+    if(!highlightLabel) return;
+    highlightLabel.textContent = highlightedIso && active.has(highlightedIso)
+      ? (ALL_COUNTRIES[highlightedIso]?.name || highlightedIso)
+      : 'Ninguno';
+  }
+
+  function buildHighlightOptions(){
+    if(!highlightOptions) return;
+    if(highlightedIso && !active.has(highlightedIso)) highlightedIso = null;
+    highlightOptions.innerHTML = '';
+    const entries = [...active]
+      .sort((a,b)=>(ALL_COUNTRIES[a]?.name||a).localeCompare(ALL_COUNTRIES[b]?.name||b,'es'));
+
+    const makeRow=(labelText, isoValue)=>{
+      const row=document.createElement('label');
+      row.style.cssText='display:flex;align-items:center;gap:.55rem;font-size:.72rem;color:var(--text2);cursor:pointer;';
+      const radio=document.createElement('input');
+      radio.type='radio';
+      radio.name='highlight-country';
+      radio.checked=highlightedIso===isoValue;
+      radio.style.cssText='accent-color:var(--eco-blue);width:13px;height:13px;cursor:pointer;flex:0 0 auto;';
+      radio.addEventListener('change', ()=>{
+        highlightedIso=isoValue;
+        refreshHighlightLabel();
+        renderChartVars();
+      });
+      const span=document.createElement('span');
+      span.textContent=labelText;
+      row.appendChild(radio);
+      row.appendChild(span);
+      highlightOptions.appendChild(row);
+    };
+
+    makeRow('Ninguno', null);
+    entries.forEach(iso=>makeRow(getEntityLabel(iso), iso));
+    refreshHighlightLabel();
+  }
+
   if(varBtn){
     varBtn.addEventListener('click', ()=>{
       const open = varPanel.classList.contains('open');
@@ -1619,6 +1700,13 @@ function buildControls(){
   if(varCancel){
     varCancel.addEventListener('click', ()=>{ varPanel.classList.remove('open'); });
   }
+  if(highlightBtn && highlightPanel){
+    highlightBtn.addEventListener('click', ()=>{
+      const open=highlightPanel.classList.contains('open');
+      highlightPanel.classList.toggle('open', !open);
+      if(!open) buildHighlightOptions();
+    });
+  }
   if(chartTypeLine){
     chartTypeLine.addEventListener('click', ()=>{
       if(chartMode==='line') return;
@@ -1633,6 +1721,7 @@ function buildControls(){
       renderAll();
     });
   }
+  refreshHighlightLabel();
   buildChips();
 }
 
@@ -1643,7 +1732,7 @@ function buildChips(){
     const el=document.createElement('button');
     el.className='chip active'; el.dataset.iso=iso;
     el.textContent=getEntityLabel(iso); el.title=c.name+' · clic para quitar';
-    el.onclick=()=>{ if(active.size>1){active.delete(iso);buildChips();renderAll();} };
+    el.onclick=()=>{ if(active.size>1){active.delete(iso); if(highlightedIso===iso) highlightedIso=null; buildChips();renderAll();} };
     row.appendChild(el);
   });
   const wrap=document.createElement('div'); wrap.className='dropdown-wrap';
@@ -1674,6 +1763,7 @@ function fillDdList(list,si){
     item.querySelector('.chk').textContent=active.has(iso)?'\u2713':'';
     item.onclick=e=>{ e.stopPropagation();
       if(active.has(iso)){if(active.size>1)active.delete(iso);}else active.add(iso);
+      if(highlightedIso && !active.has(highlightedIso)) highlightedIso=null;
       buildChips(); renderAll();
       setTimeout(()=>{ const nd=document.getElementById('cdd'); if(nd){nd.classList.add('open');nd.querySelector('.dropdown-search')?.focus();}},10);
     };
@@ -1759,7 +1849,7 @@ function renderChartVars(){
     } else if(meta.chart === 'log'){
       makeLogChart(canvasId, varKey);
     } else if(meta.chart === 'bar'){
-      makeBarChart(canvasId, varKey);
+      makeLineChart(canvasId, varKey);
     } else if(meta.chart === 'line_zero'){
       makeLineChartZero(canvasId, varKey);
     } else {
@@ -1876,8 +1966,13 @@ function mkDs(ind,type='line'){
   return [...active].map(iso=>{
     const c=ALL_COUNTRIES[iso]; const col=getSeriesColor(iso); const d=series(iso,ind);
     const label=getEntityLabel(iso);
-    if(type==='bar') return{label,data:d,backgroundColor:col+'cc',borderColor:col,borderWidth:1,borderRadius:2};
-    return{label,data:d,borderColor:col,backgroundColor:col+'18',borderWidth:iso==='ARG'?2.5:1.8,pointRadius:iso==='ARG'?4:2,pointHoverRadius:6,pointBackgroundColor:col,tension:.3,fill:false,spanGaps:true};
+    const highlighted = !!highlightedIso && iso===highlightedIso;
+    const dimmed = !!highlightedIso && !highlighted;
+    const lineColor = dimmed ? withAlpha(col,'55') : col;
+    const fillColor = dimmed ? withAlpha(col,'10') : withAlpha(col,'18');
+    const pointColor = dimmed ? withAlpha(col,'55') : col;
+    if(type==='bar') return{label,data:d,backgroundColor:dimmed?withAlpha(col,'55'):withAlpha(col,'cc'),borderColor:lineColor,borderWidth:highlighted?2:1,borderRadius:highlighted?3:2,barPercentage:highlighted?0.9:0.78,categoryPercentage:0.72};
+    return{label,data:d,borderColor:lineColor,backgroundColor:fillColor,borderWidth:highlighted?2.8:1.8,pointRadius:dimmed?1.5:(highlighted?4.5:2),pointHoverRadius:dimmed?4:6.5,pointBackgroundColor:pointColor,pointBorderWidth:highlighted?1.4:1,pointHitRadius:highlighted?10:6,tension:.3,fill:false,spanGaps:true};
   });
 }
 
@@ -1923,7 +2018,7 @@ function makeLogChart(id,ind){
 
 const zeroPlugin={id:'zeroLine',afterDraw(chart){
   const{ctx:c,chartArea:{left,right},scales:{y}}=chart; if(!y) return;
-  try{ const y0=y.getPixelForValue(0); c.save();c.beginPath();c.moveTo(left,y0);c.lineTo(right,y0);c.strokeStyle='#44546A55';c.lineWidth=1.2;c.setLineDash([4,4]);c.stroke();c.restore(); }catch(e){}
+  try{ const y0=y.getPixelForValue(0); c.save();c.beginPath();c.moveTo(left,y0);c.lineTo(right,y0);c.strokeStyle='#d4e2ed';c.lineWidth=1.4;c.stroke();c.restore(); }catch(e){}
 }};
 
 function makeLineChartZero(id,ind){
